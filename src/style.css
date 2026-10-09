@@ -20,34 +20,71 @@ body {
   padding: 0 15px;
 }
 
-/* Small header */
-.header {
-  border-bottom: 1px solid #e5e5e5;
-  padding: 10px 0;
+/* Reset (safe to keep at top of your stylesheet) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.header .container {
+/* Header */
+.site-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 12px 25px;
+  border-bottom: 1px solid #e5e5e5;
+  background: #fff;
 }
 
-.logo {
-  font-weight: 700;
+/* Logo */
+.site-header .logo {
   font-size: 1.1rem;
-  text-decoration: none;
+  font-weight: 700;
   color: #111;
+  text-decoration: none;
+  letter-spacing: -0.3px;
 }
 
-.nav a {
-  margin-left: 15px;
+.site-header .logo:hover {
+  color: #2563eb;
+}
+
+/* Navigation list */
+.nav-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+/* Links */
+.nav-links a {
   text-decoration: none;
   color: #555;
   font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
-.nav a:hover {
+.nav-links a:hover {
   color: #2563eb;
+}
+
+/* Mobile: stack or wrap */
+@media (max-width: 500px) {
+  .site-header {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 15px;
+  }
+
+  .nav-links {
+    gap: 14px;
+  }
+
+  .nav-links a {
+    font-size: 0.85rem;
+  }
 }
 
 /* Main */
