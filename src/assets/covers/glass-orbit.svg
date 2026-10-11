@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 270" role="img" aria-label="Cover of Glass Orbit">
+    <defs><linearGradient id="g-glass-orbit" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2a1b8a"/><stop offset="1" stop-color="#2a1b8a" stop-opacity=".78"/>
+    </linearGradient></defs>
+    <rect width="200" height="270" fill="url(#g-glass-orbit)"/>
+    <rect width="10" height="270" fill="#000" fill-opacity=".18"/>
+    <circle cx="100" cy="95" r="52" stroke="#c4b5fd" stroke-opacity=".6" fill="none" stroke-width="2"/><ellipse cx="100" cy="95" rx="52" ry="18" stroke="#c4b5fd" stroke-opacity=".6" fill="none"/><ellipse cx="100" cy="95" rx="20" ry="52" stroke="#c4b5fd" stroke-opacity=".6" fill="none"/>
+    <g fill="#fff" font-family="Georgia,serif" font-weight="700" font-size="19"><text x="24" y="190">Glass Orbit</text></g>
+    <text x="24" y="250" fill="#fff" fill-opacity=".88" font-family="Georgia,serif" font-size="12">K. Mbeki</text>
+  </svg>

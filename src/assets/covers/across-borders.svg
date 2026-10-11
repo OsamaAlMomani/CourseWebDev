@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 270" role="img" aria-label="Cover of Across Borders">
+    <defs><linearGradient id="g-across-borders" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b45309"/><stop offset="1" stop-color="#b45309" stop-opacity=".78"/>
+    </linearGradient></defs>
+    <rect width="200" height="270" fill="url(#g-across-borders)"/>
+    <rect width="10" height="270" fill="#000" fill-opacity=".18"/>
+    <path d="M0 150Q50 100 100 140T200 110V270H0Z" fill="#fde68a" fill-opacity=".55"/><path d="M0 180Q60 130 110 165T200 140V270H0Z" fill="#fde68a" fill-opacity=".55"/>
+    <g fill="#fff" font-family="Georgia,serif" font-weight="700" font-size="19"><text x="24" y="182">Across</text><text x="24" y="204">Borders</text></g>
+    <text x="24" y="250" fill="#fff" fill-opacity=".88" font-family="Georgia,serif" font-size="12">B. Author</text>
+  </svg>

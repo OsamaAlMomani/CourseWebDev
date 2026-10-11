@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 270" role="img" aria-label="Cover of The Global Novel">
+    <defs><linearGradient id="g-global-novel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e3a8a"/><stop offset="1" stop-color="#1e3a8a" stop-opacity=".78"/>
+    </linearGradient></defs>
+    <rect width="200" height="270" fill="url(#g-global-novel)"/>
+    <rect width="10" height="270" fill="#000" fill-opacity=".18"/>
+    <circle cx="100" cy="95" r="52" stroke="#93c5fd" stroke-opacity=".6" fill="none" stroke-width="2"/><ellipse cx="100" cy="95" rx="52" ry="18" stroke="#93c5fd" stroke-opacity=".6" fill="none"/><ellipse cx="100" cy="95" rx="20" ry="52" stroke="#93c5fd" stroke-opacity=".6" fill="none"/>
+    <g fill="#fff" font-family="Georgia,serif" font-weight="700" font-size="19"><text x="24" y="182">The Global</text><text x="24" y="204">Novel</text></g>
+    <text x="24" y="250" fill="#fff" fill-opacity=".88" font-family="Georgia,serif" font-size="12">A. Writer</text>
+  </svg>

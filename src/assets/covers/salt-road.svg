@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 270" role="img" aria-label="Cover of The Salt Road">
+    <defs><linearGradient id="g-salt-road" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e7490"/><stop offset="1" stop-color="#0e7490" stop-opacity=".78"/>
+    </linearGradient></defs>
+    <rect width="200" height="270" fill="url(#g-salt-road)"/>
+    <rect width="10" height="270" fill="#000" fill-opacity=".18"/>
+    <g stroke="#a5f3fc" stroke-opacity=".6" fill="none" stroke-width="2"><rect x="40" y="45" width="120" height="100"/><path d="M40 95h120M100 45v100"/></g>
+    <g fill="#fff" font-family="Georgia,serif" font-weight="700" font-size="19"><text x="24" y="190">The Salt Road</text></g>
+    <text x="24" y="250" fill="#fff" fill-opacity=".88" font-family="Georgia,serif" font-size="12">L. Okafor</text>
+  </svg>

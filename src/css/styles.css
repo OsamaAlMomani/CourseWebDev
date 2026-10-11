@@ -1,0 +1,563 @@
+/* ==========================================================
+   GlobalBooks styles
+   1. Tokens   2. Base   3. Buttons & forms   4. Header
+   5. Hero     6. Perks  7. Reader sections   8. Book cards
+   9. Feature  10. Newsletter  11. Footer
+   12. Cart drawer  13. Modal & toast  14. Desktop layout
+   Written mobile-first: the base styles are for phones,
+   and the media queries at the bottom add the desktop layout.
+   ========================================================== */
+
+/* ---------- 1. Tokens ---------- */
+:root {
+  --ink: #14122b;
+  --ink-soft: #2a2750;
+  --paper: #f5f3ff;
+  --white: #ffffff;
+  --blue: #3d5afe;
+  --coral: #ff6b57;
+  --sun: #ffd23f;
+  --violet: #5b3df5;
+  --mint: #b9f3dd;
+  --muted: #6b6a85;
+  --line: #e4e0f7;
+
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --radius: 18px;
+  --radius-sm: 10px;
+  --gap: 1rem;
+  --tap: 44px; /* minimum comfortable touch target on iPhone */
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ---------- 2. Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--safe-top) + 70px);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.55;
+  -webkit-tap-highlight-color: transparent;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; color: inherit; }
+ul { list-style: none; }
+svg, img, video { display: block; max-width: 100%; }
+body { overflow-x: clip; }
+
+:focus-visible {
+  outline: 3px solid var(--sun);
+  outline-offset: 2px;
+}
+
+:root { --gutter: max(1rem, 4vw, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px)); }
+.container {
+  width: min(calc(1180px + 2 * var(--gutter)), 100%);
+  padding-inline: var(--gutter);
+  margin-inline: auto;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--sun);
+  color: var(--ink);
+  padding: 0.6rem 1rem;
+  z-index: 200;
+}
+.skip-link:focus { left: 0; }
+
+/* ---------- 3. Buttons & forms ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 0 1.2rem;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 700;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-accent  { background: var(--sun); color: var(--ink); }
+.btn-primary { background: var(--blue); color: var(--white); }
+.btn-cart    { background: var(--coral); color: var(--white); padding: 0 1rem; }
+.btn-block   { width: 100%; }
+
+.icon-btn {
+  width: var(--tap);
+  height: var(--tap);
+  border: 0;
+  background: transparent;
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+
+/* One shared look for the search box and the newsletter box.
+   16px text stops iOS Safari from zooming in when a field is tapped. */
+.search {
+  display: flex;
+  gap: 0.4rem;
+  background: var(--white);
+  padding: 0.3rem;
+  border-radius: 999px;
+  max-width: 520px;
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0 1rem;
+  font-size: 16px;
+}
+
+/* ---------- 4. Header ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--ink);
+  color: var(--white);
+  padding-top: var(--safe-top);
+}
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 64px;
+}
+.logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+}
+.logo span { color: var(--sun); }
+
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* On phones the nav is a dropdown opened by the menu button */
+.nav {
+  display: none;
+  position: fixed;
+  top: calc(64px + var(--safe-top));
+  left: 0;
+  right: 0;
+  max-height: calc(100dvh - 64px - var(--safe-top));
+  overflow-y: auto;
+  flex-direction: column;
+  background: var(--ink);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.5rem var(--gutter) 1rem;
+}
+.nav:target { display: flex; }
+.nav-close { color: var(--sun); }
+.nav a {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+
+.menu-toggle {
+  width: var(--tap);
+  height: var(--tap);
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  background: transparent;
+  border: 0;
+}
+.menu-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--white);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Narrow phones: smaller hero covers so the fan stays inside the screen */
+@media (max-width: 500px) {
+  .hero-shelf { height: 250px; }
+  .hero-shelf img { width: 112px; }
+}
+
+/* ---------- 5. Hero ---------- */
+.hero {
+  background: var(--ink);
+  color: var(--white);
+  padding: 2.5rem 0 3.5rem;
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+}
+.hero-grid {
+  display: grid;
+  gap: 2.5rem;
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2.3rem, 9vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+}
+.hero p {
+  color: #c9c6ee;
+  font-size: 1.1rem;
+  max-width: 46ch;
+  margin-bottom: 1.5rem;
+}
+
+.reader-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+.reader-pills a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.reader-pills a:nth-child(1) { background: var(--sun); }
+.reader-pills a:nth-child(2) { background: #a898ff; }
+.reader-pills a:nth-child(3) { background: var(--coral); }
+.reader-pills a:nth-child(4) { background: var(--mint); }
+
+/* Fanned covers on the right (below the text on phones) */
+.hero-shelf {
+  position: relative;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+}
+.hero-shelf img {
+  position: absolute;
+  bottom: 0;
+  width: 140px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- 6. Perks ---------- */
+.perks { background: var(--white); border-bottom: 1px solid var(--line); }
+.perks-row {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding-block: 1rem;
+  scrollbar-width: none;
+}
+.perks-row::-webkit-scrollbar { display: none; }
+.perk {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+.perk strong { font-size: 1rem; }
+.perk span { color: var(--muted); }
+
+/* ---------- 7. Reader sections ----------
+   Each section sets its own colours through these variables. */
+.world {
+  --w-bg: var(--paper);
+  --w-fg: var(--ink);
+  --w-muted: var(--muted);
+  background: var(--w-bg);
+  color: var(--w-fg);
+  padding: 3rem 0;
+}
+.world-kids     { --w-bg: var(--sun);    --w-fg: #2b1b00; --w-muted: #5c4500; }
+.world-teens    { --w-bg: var(--violet); --w-fg: var(--white); --w-muted: #d9d2ff; }
+.world-adults   { --w-bg: var(--ink);    --w-fg: var(--white); --w-muted: #c9c6ee; }
+.world-students { --w-bg: var(--mint);   --w-fg: var(--ink); --w-muted: #35544a; }
+
+.world-head { margin-bottom: 1.4rem; }
+.world-head h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.world-head p { color: var(--w-muted); margin-top: 0.4rem; }
+.world[hidden] { display: none; }
+
+/* Phones: one swipeable row. It bleeds to the screen edge. */
+.shelf {
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  margin-inline: calc(var(--gutter) * -1);
+  padding: 0.3rem var(--gutter) 1rem;
+  scroll-padding-inline: var(--gutter);
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.shelf::-webkit-scrollbar { display: none; }
+
+/* ---------- 8. Book cards ---------- */
+.card {
+  flex: 0 0 min(62vw, 230px);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  color: var(--ink);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(20, 18, 43, 0.18);
+}
+.card-cover {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.card-cover img { width: 100%; height: auto; }
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  padding: 0.9rem;
+}
+.card-body h3 { font-size: 1rem; line-height: 1.25; }
+.card-meta { color: var(--muted); font-size: 0.85rem; }
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.7rem;
+}
+.price { font-weight: 800; font-size: 1.1rem; }
+.btn-add {
+  min-height: 40px;
+  padding: 0 0.9rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.badge {
+  display: inline-block;
+  margin-left: 0.3rem;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: var(--coral);
+  color: var(--white);
+  font-size: 0.7rem;
+  vertical-align: middle;
+}
+
+.no-results { padding: 2rem 0; color: var(--muted); }
+
+/* ---------- 9. Book of the month ---------- */
+.feature { background: var(--paper); padding: 3rem 0; }
+.feature-card {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+  background: var(--coral);
+  color: var(--white);
+  border-radius: calc(var(--radius) + 6px);
+  padding: 1.5rem;
+}
+.feature-card img {
+  width: min(190px, 60%);
+  height: auto;
+  margin-inline: auto;
+  border-radius: 8px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3);
+}
+.feature-card h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 6vw, 2.6rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.feature-tag {
+  display: inline-block;
+  margin-bottom: 0.6rem;
+  padding: 0.15rem 0.8rem;
+  border-radius: 999px;
+  background: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.feature-card p { margin: 0.7rem 0 1.1rem; max-width: 48ch; }
+.feature-card .price { margin-right: 0.8rem; font-size: 1.3rem; }
+
+/* ---------- 10. Newsletter ---------- */
+.newsletter { background: var(--blue); color: var(--white); padding: 2.5rem 0; }
+.newsletter-row { display: grid; gap: 1.2rem; }
+.newsletter h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+  line-height: 1.1;
+}
+.newsletter p { opacity: 0.9; margin-top: 0.3rem; }
+
+/* ---------- 11. Footer ---------- */
+.site-footer {
+  background: var(--ink);
+  color: #a9a6cf;
+  padding: 2.5rem 0 calc(1.5rem + var(--safe-bottom));
+}
+.footer-grid { display: grid; gap: 1.8rem; margin-bottom: 1.8rem; }
+.site-footer h3 { color: var(--white); margin-bottom: 0.6rem; font-size: 1rem; }
+.site-footer li { margin-bottom: 0.2rem; }
+.site-footer li a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+}
+.site-footer a:hover { color: var(--white); }
+.footer-note {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 1.2rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ---------- 12. Motion: hero video, floating covers, marquee ---------- */
+.hero-video { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; opacity: 0.55; }
+.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(20,18,43,.85), rgba(20,18,43,.5)); }
+
+.hero-shelf { --s: 1; }
+.hero-shelf img {
+  transform: translateX(calc(var(--x) * var(--s))) rotate(var(--r));
+  animation: float 6s ease-in-out infinite alternate;
+}
+.hero-shelf img:nth-child(1) { --x: -120px; --r: -16deg; z-index: 1; }
+.hero-shelf img:nth-child(2) { --x: -60px;  --r: -7deg;  z-index: 3; animation-delay: -1.2s; }
+.hero-shelf img:nth-child(3) { --x: 0px;    --r: 2deg;   z-index: 5; animation-delay: -2.4s; }
+.hero-shelf img:nth-child(4) { --x: 60px;   --r: 10deg;  z-index: 3; animation-delay: -3.6s; }
+.hero-shelf img:nth-child(5) { --x: 120px;  --r: 18deg;  z-index: 1; animation-delay: -4.8s; }
+@keyframes float {
+  to { transform: translate(calc(var(--x) * var(--s)), -16px) rotate(calc(var(--r) + 3deg)); }
+}
+@media (max-width: 400px) { .hero-shelf { --s: 0.7; } }
+
+.marquee {
+  overflow: hidden;
+  background: var(--ink-soft);
+  padding: 1.1rem 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track { display: flex; width: max-content; animation: marquee 55s linear infinite; }
+.marquee img { width: clamp(84px, 22vw, 120px); height: auto; margin-right: 1rem; border-radius: 6px; box-shadow: 0 8px 18px rgba(0,0,0,.35); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+
+.feature-card img { animation: sway 7s ease-in-out infinite alternate; }
+@keyframes sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg) translateY(-6px); } }
+
+/* Sections ease in as they scroll into view (browsers without support just show them) */
+@supports (animation-timeline: view()) {
+  .world-head, .feature-card, .watch-grid { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+  @keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+}
+
+/* ---------- 13. Cards (no-JS version), video section ---------- */
+.feature-card { width: min(1180px, calc(100% - 2 * var(--gutter))); }
+.card-blurb { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+.btn-add { display: inline-flex; align-items: center; }
+
+.watch { background: var(--paper); padding: 3rem 0; }
+.watch-grid { display: grid; gap: 1.5rem; align-items: center; }
+.watch h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.8rem, 6vw, 2.8rem); line-height: 1.05; letter-spacing: -0.02em; }
+.watch p { color: var(--muted); margin-top: 0.6rem; max-width: 46ch; }
+.reel { width: min(100%, 320px); aspect-ratio: 9 / 16; margin-inline: auto; border-radius: var(--radius); overflow: hidden; background: var(--ink); box-shadow: 0 18px 40px rgba(20,18,43,.3); }
+.reel video { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- 14. Tablet, desktop and device tweaks ---------- */
+.hero-grid, .newsletter-row, .footer-grid, .feature-card, .watch-grid { grid-template-columns: minmax(0, 1fr); } /* lets grid children shrink on tiny phones */
+@media (min-width: 640px) {
+  .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
+  .newsletter-row { grid-template-columns: 1fr 1fr; align-items: center; }
+  .feature-card { grid-template-columns: 220px 1fr; padding: 2rem; }
+  .watch-grid { grid-template-columns: 320px 1fr; gap: 3rem; }
+  /* swipe row becomes a grid that fits any width */
+  .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); overflow: visible; margin-inline: 0; padding: 0.3rem 0 1rem; scroll-snap-type: none; }
+  .card { flex: initial; }
+}
+@media (min-width: 860px) {
+  .menu-toggle, .nav-close { display: none; }
+  .nav { display: flex; position: static; flex-direction: row; gap: 1.4rem; max-height: none; overflow: visible; border: 0; padding: 0; background: transparent; }
+  .nav a { min-height: 0; font-size: 1rem; color: #c9c6ee; }
+  .nav a:hover { color: var(--white); }
+  .hero { padding: 4.5rem 0 5rem; }
+  .hero::after { background: linear-gradient(90deg, rgba(20,18,43,.92), rgba(20,18,43,.45) 70%, rgba(20,18,43,.2)); }
+  .hero-grid { grid-template-columns: 1.1fr 1fr; align-items: center; }
+  .hero-shelf { height: 380px; }
+  .hero-shelf img { width: 180px; }
+  .world { padding: 4.5rem 0; }
+  .shelf { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+}
+@media (hover: hover) {
+  .card { transition: transform 0.2s ease; }
+  .card:hover { transform: translateY(-4px); }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+}
+@media (pointer: coarse) { .btn-add { min-height: 44px; } }
+@media (max-width: 359px) { .logo { font-size: 1.2rem; } .btn-cart { padding: 0 0.8rem; font-size: 0.9rem; } .card { flex-basis: 70vw; } }
+@media (orientation: landscape) and (max-height: 520px) {
+  .hero { padding: 1.5rem 0 2rem; }
+  .hero-shelf { display: none; }
+  .hero-grid { grid-template-columns: 1fr; }
+  .world, .feature, .watch { padding: 2rem 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  .hero-video { display: none; }
+  .marquee { overflow-x: auto; }
+}
