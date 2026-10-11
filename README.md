@@ -23,7 +23,7 @@ This version was rebuilt from an earlier one that relied on a JavaScript file. E
 
 ## 3. What a visitor sees, from top to bottom
 
-1. **Top bar:** the logo, an Order button and a menu button on phones. On larger screens the menu shows as a row of links.
+1. **Top bar:** the logo, a Contact button and a menu button on phones. On larger screens the menu shows as a row of links.
 2. **Hero:** a headline over a looping background video, with floating book covers and quick links to the four reader groups.
 3. **Benefits strip:** global shipping, fair prices, easy returns and secure ordering.
 4. **Trending strip:** a slowly scrolling row of every book cover.
@@ -32,7 +32,8 @@ This version was rebuilt from an earlier one that relied on a JavaScript file. E
 7. **Video section:** a 14-second vertical video touring all reader groups.
 8. **Students shelf:** study guides and academic reads.
 9. **Newsletter:** an email box for the Friday book deal.
-10. **Footer:** shop links, support links and contact email.
+10. **Talk to a real person:** the smart contact area (explained in section 8).
+11. **Footer:** shop links, support links and contact email.
 
 ---
 
@@ -45,6 +46,7 @@ This version was rebuilt from an earlier one that relied on a JavaScript file. E
 | Swipe through books on a phone | Each shelf is a sideways swipe row that snaps card by card. |
 | See book covers | Covers are ready-made picture files instead of being drawn on the fly. |
 | Order a book | The Order button opens an email with the book title already filled in. |
+| Contact the shop | The customer picks what they need, and the form shows only the questions that fit. |
 | Subscribe | The form opens an email to the shop. |
 
 ---
@@ -81,7 +83,35 @@ This version was rebuilt from an earlier one that relied on a JavaScript file. E
 
 ---
 
-## 8. What was removed, and why
+## 8. Smart contact: helping customers reach you
+
+Most contact pages are a blank box, which leads to slow back-and-forth emails. This one asks first and then adapts.
+
+**Step 1: the customer says what they need.** There are five choices: help me pick a book, place or bulk order, track or change an order, shipping or returns, and something else.
+
+**Step 2: only the right questions appear.** Nothing else is shown until a choice is made.
+
+- **Help me pick a book:** who the book is for, the budget, and what they enjoy.
+- **Place or bulk order:** which book, how many copies, and the country.
+- **Track or change an order:** the order number.
+- **Shipping or returns:** the country and the order number.
+- **Something else:** just a free message.
+
+Name, email and an optional "anything else" box are always there. The result is that every message you receive already contains what you need to answer, so there is no need to write back asking for details.
+
+**Three other ways to reach you**, shown next to the form:
+
+- **WhatsApp:** opens a chat with the first sentence already written. It is the fastest option for customers.
+- **Email:** best for orders and longer questions.
+- **Phone:** with the opening hours written beside it.
+
+**A floating Chat button** stays in the corner of the screen on every page for a one-tap WhatsApp message. It moves out of the way when the contact area is on screen, so it never covers the form.
+
+On older browsers that cannot hide fields, the form simply shows all questions, and it still works.
+
+---
+
+## 9. What was removed, and why
 
 Without JavaScript, a page cannot remember things or react to typing. These features were removed as a result:
 
@@ -93,7 +123,7 @@ Without JavaScript, a page cannot remember things or react to typing. These feat
 
 ---
 
-## 9. What is in the project folder
+## 10. What is in the project folder
 
 - **index.html:** the whole page.
 - **css folder:** one styling file that controls every color, layout and animation.
@@ -103,27 +133,28 @@ Without JavaScript, a page cannot remember things or react to typing. These feat
 
 ---
 
-## 10. How to use it
+## 11. How to use it
 
 - **Preview:** open the index file in any web browser. No installation or server is needed.
 - **Publish:** upload the whole folder to any basic web host. It is only files, so even the cheapest hosting works.
 
 ---
 
-## 11. How to change things
+## 12. How to change things
 
 - **Books, prices and descriptions:** edit the matching card in the index file.
 - **Colors and fonts:** change the color list at the top of the styling file.
 - **Videos:** replace the two video files and their preview pictures with your own, keeping the same names.
-- **Order email address:** replace the sample address everywhere it appears.
+- **Contact details:** replace the sample email, WhatsApp number and phone number, and set your real opening hours and reply time. The WhatsApp number is used in two places, the contact area and the floating button.
 - **Cover pictures:** replace any cover file with a real book cover, keeping the same name.
 
 ---
 
-## 12. Good next steps
+## 13. Good next steps
 
 - Connect real checkout with a payment link for each book.
-- Connect the newsletter form to an email service.
+- Connect the contact and newsletter forms to a form service, so messages arrive in your inbox without the customer needing an email app on their device.
+- Check the reply time promised in the contact area, and change it to what you can really deliver.
 - Add separate German, Spanish and French pages.
 - Replace the placeholder videos with real footage.
 - Replace the generated covers with real book covers.

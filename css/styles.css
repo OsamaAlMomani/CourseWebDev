@@ -519,13 +519,67 @@ body { overflow-x: clip; }
 .reel { width: min(100%, 320px); aspect-ratio: 9 / 16; margin-inline: auto; border-radius: var(--radius); overflow: hidden; background: var(--ink); box-shadow: 0 18px 40px rgba(20,18,43,.3); }
 .reel video { width: 100%; height: 100%; object-fit: cover; }
 
+/* ---------- Smart contact: pick a need, see only the fields that fit ---------- */
+.contact { background: var(--ink-soft); color: var(--white); padding: 3rem 0; }
+.contact-grid { display: grid; gap: 2rem; }
+.contact h2 { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.8rem, 6vw, 2.8rem); line-height: 1.05; letter-spacing: -0.02em; }
+.contact-intro p { color: #c9c6ee; margin-top: 0.6rem; max-width: 44ch; }
+.channels { display: grid; gap: 0.6rem; margin-top: 1.2rem; }
+.channels a { display: flex; flex-direction: column; justify-content: center; min-height: var(--tap); padding: 0.7rem 1rem; border-radius: var(--radius-sm); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18); }
+.channels strong { color: var(--sun); }
+.channels span { color: #c9c6ee; font-size: 0.9rem; }
+
+.contact-form { background: var(--white); color: var(--ink); border-radius: calc(var(--radius) + 6px); padding: 1.2rem; }
+.needs { border: 0; display: grid; gap: 0.5rem; margin-bottom: 1.2rem; min-width: 0; }
+.needs legend, .step2 { font-weight: 800; margin-bottom: 0.5rem; }
+.step2 { margin-bottom: 0.7rem; }
+.need { position: relative; display: block; }
+.need input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.need span { display: flex; align-items: center; min-height: var(--tap); padding: 0.3rem 1rem; border: 2px solid var(--line); border-radius: var(--radius-sm); font-weight: 500; cursor: pointer; }
+.need input:checked + span { background: var(--sun); border-color: var(--sun); font-weight: 700; }
+.need input:focus-visible + span { outline: 3px solid var(--blue); outline-offset: 2px; }
+.fields { display: grid; gap: 0.8rem; }
+.f { display: grid; gap: 0.3rem; font-weight: 500; font-size: 0.95rem; min-width: 0; }
+.f input, .f select, .f textarea { width: 100%; min-height: var(--tap); padding: 0.6rem 0.8rem; border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--paper); color: var(--ink); font: inherit; font-size: 16px; }
+.f textarea { resize: vertical; }
+.contact-form .btn { width: 100%; margin-top: 1.1rem; }
+/* Newer browsers: hide the extra questions until a need is chosen. Older ones simply show them all. */
+@supports selector(:has(*)) {
+  .contact-form .f-pick, .contact-form .f-order, .contact-form .f-track, .contact-form .f-help { display: none; }
+  .contact-form:has(#n-pick:checked) .f-pick, .contact-form:has(#n-order:checked) .f-order,
+  .contact-form:has(#n-track:checked) .f-track, .contact-form:has(#n-help:checked) .f-help { display: grid; }
+  .contact-form:not(:has(.need input:checked)) .step2, .contact-form:not(:has(.need input:checked)) .fields,
+  .contact-form:not(:has(.need input:checked)) .btn { display: none; }
+}
+
+.chat-fab {
+  position: fixed; z-index: 60;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: calc(1rem + var(--safe-bottom));
+  display: inline-flex; align-items: center; min-height: 48px; padding: 0 1.1rem;
+  border-radius: 999px; background: var(--coral); color: var(--white); font-weight: 700;
+  box-shadow: 0 10px 24px rgba(20,18,43,.35);
+}
+.site-footer { padding-bottom: calc(5rem + var(--safe-bottom)); }
+/* The chat button steps aside once the contact section scrolls into view (where supported) */
+@supports (animation-timeline: view()) {
+  body { timeline-scope: --contact; }
+  .contact { view-timeline: --contact block; }
+  .chat-fab { animation: fab-away linear both; animation-timeline: --contact; animation-range: entry 25% entry 26%; }
+  @keyframes fab-away { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+}
+
 /* ---------- 14. Tablet, desktop and device tweaks ---------- */
-.hero-grid, .newsletter-row, .footer-grid, .feature-card, .watch-grid { grid-template-columns: minmax(0, 1fr); } /* lets grid children shrink on tiny phones */
+.hero-grid, .contact-grid, .newsletter-row, .footer-grid, .feature-card, .watch-grid { grid-template-columns: minmax(0, 1fr); } /* lets grid children shrink on tiny phones */
 @media (min-width: 640px) {
   .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
   .newsletter-row { grid-template-columns: 1fr 1fr; align-items: center; }
   .feature-card { grid-template-columns: 220px 1fr; padding: 2rem; }
   .watch-grid { grid-template-columns: 320px 1fr; gap: 3rem; }
+  .needs { grid-template-columns: 1fr 1fr; }
+  .fields { grid-template-columns: 1fr 1fr; }
+  .f-wide { grid-column: 1 / -1; }
+  .contact-form { padding: 1.6rem; }
   /* swipe row becomes a grid that fits any width */
   .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); overflow: visible; margin-inline: 0; padding: 0.3rem 0 1rem; scroll-snap-type: none; }
   .card { flex: initial; }
@@ -541,6 +595,7 @@ body { overflow-x: clip; }
   .hero-shelf { height: 380px; }
   .hero-shelf img { width: 180px; }
   .world { padding: 4.5rem 0; }
+  .contact-grid { grid-template-columns: 1fr 1.25fr; gap: 3rem; align-items: start; }
   .shelf { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
 }
 @media (hover: hover) {
@@ -559,5 +614,6 @@ body { overflow-x: clip; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   .hero-video { display: none; }
+  .chat-fab { transition: none; }
   .marquee { overflow-x: auto; }
 }
