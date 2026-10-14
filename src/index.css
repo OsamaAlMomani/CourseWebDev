@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+/* Our design tokens. Tailwind turns each --color-* into bg-*, text-*, border-* classes
+   (so --color-sun gives us bg-sun, text-sun and so on). */
+@theme {
+  --color-ink: #14122b;
+  --color-ink-soft: #2a2750;
+  --color-paper: #f5f3ff;
+  --color-blue: #3d5afe;
+  --color-coral: #ff6b57;
+  --color-sun: #ffd23f;
+  --color-violet: #5b3df5;
+  --color-mint: #b9f3dd;
+  --color-muted: #6b6a85;
+  --color-line: #e4e0f7;
+
+  /* teens */
+  --color-neon: #c6ff3d;
+  --color-hot: #ff2e93;
+  /* adults */
+  --color-cream: #f6efe2;
+  --color-gold: #d4a84b;
+  --color-navy: #0e1630;
+  /* students */
+  --color-notebook: #fffdf5;
+  /* scientists */
+  --color-lab: #0a2a2f;
+  --color-teal: #5eead4;
+  --color-amber: #f5a524;
+
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-kids: "Fredoka", "Avenir Next", system-ui, sans-serif;
+  --font-teens: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-adults: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-science: "IBM Plex Serif", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --animate-float: float 6s ease-in-out infinite alternate;
+  --animate-marquee-slow: marquee 80s linear infinite;
+  --animate-sway: sway 7s ease-in-out infinite alternate;
+  --animate-bob: bob 4s ease-in-out infinite alternate;
+  --animate-steam: steam 3s ease-in-out infinite;
+  --animate-twinkle: twinkle 2.5s ease-in-out infinite alternate;
+
+  @keyframes float {
+    to { transform: translate(calc(var(--x) * var(--s)), -16px) rotate(calc(var(--r) + 3deg)); }
+  }
+  @keyframes marquee {
+    to { transform: translateX(-50%); }
+  }
+  @keyframes bob {
+    from { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+    to { transform: translateY(-14px) rotate(calc(var(--tilt, 0deg) + 4deg)); }
+  }
+  @keyframes steam {
+    0% { opacity: 0; transform: translateY(8px); }
+    50% { opacity: 0.8; }
+    100% { opacity: 0; transform: translateY(-12px); }
+  }
+  @keyframes twinkle {
+    from { opacity: 0.15; transform: scale(0.7); }
+    to { opacity: 1; transform: scale(1.1); }
+  }
+  @keyframes sway {
+    from { transform: rotate(-3deg); }
+    to { transform: rotate(3deg) translateY(-6px); }
+  }
+}
+
+/* phones held sideways: very little height, so we trim the hero */
+@custom-variant short-landscape (@media (orientation: landscape) and (max-height: 520px));
+
+@layer base {
+  :root {
+    --gutter: max(1rem, 4vw, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 70px);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-family: var(--font-body);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    line-height: 1.55;
+    overflow-x: clip;
+    -webkit-tap-highlight-color: transparent;
+  }
+  img, video, svg { display: block; max-width: 100%; }
+  :focus-visible {
+    outline: 3px solid var(--color-sun);
+    outline-offset: 2px;
+  }
+}
+
+/* A few scroll-driven effects Tailwind has no utility for.
+   Browsers that don't support them just skip this block and show everything normally. */
+@supports (animation-timeline: view()) {
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: none; }
+  }
+  .reveal {
+    animation: rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  /* chat button fades out once the contact section scrolls into view */
+  @keyframes fab-away {
+    to { opacity: 0; visibility: hidden; pointer-events: none; }
+  }
+  body { timeline-scope: --contact; }
+  .contact-timeline { view-timeline: --contact block; }
+  .fab-away {
+    animation: fab-away linear both;
+    animation-timeline: --contact;
+    animation-range: entry 25% entry 26%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal, .fab-away { animation: none; }
+}
