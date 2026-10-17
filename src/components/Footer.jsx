@@ -9,6 +9,11 @@ const support = [
 
 const linkCls = 'inline-flex min-h-9 items-center hover:text-white'
 
+// smooth scroll back up, same as clicking the logo but from the bottom of the page
+function backToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 export default function Footer() {
   return (
     <footer className="bg-ink pt-16 pb-[calc(5rem_+_env(safe-area-inset-bottom,0px))] text-[#a9a6cf]">
@@ -40,6 +45,11 @@ export default function Footer() {
       </Container>
       <Container as="p" className="border-t border-white/10 pt-5 text-center text-[0.85rem]">
         &copy; 2026 GlobalBooks. All rights reserved.
+      </Container>
+      <Container className="mt-4 flex justify-center">
+        <button type="button" onClick={backToTop} className={`${linkCls} font-bold underline underline-offset-4`}>
+          Back to top ↑
+        </button>
       </Container>
     </footer>
   )

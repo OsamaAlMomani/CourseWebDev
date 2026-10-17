@@ -34,6 +34,8 @@ function Field({ label, wide = false, show = true, children }) {
 export default function Contact() {
   // which "what do you need?" option is picked ('' = nothing yet)
   const [topic, setTopic] = useState('')
+  // flips to true once they hit send, so we can say thanks
+  const [sent, setSent] = useState(false)
   const is = (...ids) => ids.includes(topic)
 
   return (
@@ -66,6 +68,7 @@ export default function Contact() {
           action="mailto:hello@globalbooks.example?subject=GlobalBooks%20request"
           method="post"
           encType="text/plain"
+          onSubmit={() => setSent(true)}
           className="rounded-[32px] bg-white p-6 text-ink sm:p-6"
         >
           <fieldset className="mb-5 grid min-w-0 gap-2 sm:grid-cols-2">
@@ -78,7 +81,10 @@ export default function Contact() {
                   value={t.label}
                   required
                   checked={topic === t.id}
-                  onChange={() => setTopic(t.id)}
+                  onChange={() => {
+                    setTopic(t.id)
+                    setSent(false)
+                  }}
                   className="peer absolute size-px opacity-0"
                 />
                 <span className="flex min-h-11 cursor-pointer items-center rounded-[10px] border-2 border-line px-4 py-1 font-medium peer-checked:border-sun peer-checked:bg-sun peer-checked:font-bold peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue">
@@ -148,6 +154,12 @@ export default function Contact() {
           <Button as="button" type="submit" variant="primary" large className={`${topic ? 'inline-flex' : 'hidden'} mt-4 w-full`}>
             Send to GlobalBooks
           </Button>
+          {/* no preventDefault here, the browser still opens the email like before */}
+          {sent && (
+            <p role="status" className="mt-3 text-center font-medium">
+              Thanks! Your email app should open with the message ready to send.
+            </p>
+          )}
         </form>
       </Container>
     </section>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { groups } from '../data/books'
 import { themes } from '../data/themes'
 import Container from './Container'
@@ -7,6 +7,15 @@ import Button from './Button'
 export default function Header({ route }) {
   // is the phone menu open? That's the only thing the header needs to remember
   const [open, setOpen] = useState(false)
+
+  // pressing Escape closes the menu. The listener is removed again when the header goes away
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   // the header takes on the colours of the page you're on
   const theme = themes[route] ?? themes.home

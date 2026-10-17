@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { groups } from '../data/books'
 import { themes } from '../data/themes'
 import { asset, cover } from '../lib/asset'
@@ -14,12 +15,30 @@ const fan = [
 ]
 
 export default function Hero() {
+  const videoRef = useRef(null)
+  // the background video autoplays, so it starts out as playing
+  const [playing, setPlaying] = useState(true)
+
+  // lets people stop the moving background if it's distracting
+  function toggleVideo() {
+    const v = videoRef.current
+    if (!v) return
+    if (v.paused) {
+      v.play()
+      setPlaying(true)
+    } else {
+      v.pause()
+      setPlaying(false)
+    }
+  }
+
   return (
     <section
       id="top"
       className="relative isolate flex overflow-hidden bg-ink pt-12 pb-16 text-white md:pt-20 md:pb-24 lg:min-h-[85svh] lg:items-center short-landscape:pt-6 short-landscape:pb-8"
     >
       <video
+        ref={videoRef}
         className="absolute inset-0 -z-20 h-full w-full object-cover opacity-55 motion-reduce:hidden"
         src={asset('video/hero.mp4')}
         poster={asset('video/hero-poster.jpg')}
@@ -88,6 +107,15 @@ export default function Hero() {
           </div>
         </div>
       </Container>
+
+      <button
+        type="button"
+        onClick={toggleVideo}
+        aria-pressed={!playing}
+        className="absolute right-4 bottom-4 z-10 min-h-11 rounded-full bg-ink/70 px-4 text-sm font-bold text-white backdrop-blur motion-reduce:hidden"
+      >
+        {playing ? 'Pause background' : 'Play background'}
+      </button>
     </section>
   )
 }
