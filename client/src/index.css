@@ -38,6 +38,7 @@
 
   --animate-float: float 6s ease-in-out infinite alternate;
   --animate-marquee-slow: marquee 80s linear infinite;
+  --animate-marquee-rev: marquee-rev 80s linear infinite;
   --animate-sway: sway 7s ease-in-out infinite alternate;
   --animate-bob: bob 4s ease-in-out infinite alternate;
   --animate-steam: steam 3s ease-in-out infinite;
@@ -48,6 +49,10 @@
   }
   @keyframes marquee {
     to { transform: translateX(-50%); }
+  }
+  @keyframes marquee-rev {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
   }
   @keyframes bob {
     from { transform: translateY(0) rotate(var(--tilt, 0deg)); }
@@ -391,6 +396,81 @@
   @keyframes drawer-in { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes popup-in { from { transform: translateY(16px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+}
+
+/* The maths plane (MathPlane.jsx): minor lines every --u, numbered major lines every --M, both counted from the origin
+   which sits --ox from the left and --oy from the bottom. The two axes are drawn on top of the grid line they share. */
+@layer components {
+  .math-plane {
+    --plane-minor: color-mix(in srgb, var(--skin-ink) 7%, transparent);
+    --plane-major: color-mix(in srgb, var(--skin-ink) 16%, transparent);
+    background-image:
+      linear-gradient(var(--plane-major) 1px, transparent 1px),
+      linear-gradient(90deg, var(--plane-major) 1px, transparent 1px),
+      linear-gradient(var(--plane-minor) 1px, transparent 1px),
+      linear-gradient(90deg, var(--plane-minor) 1px, transparent 1px);
+    background-size: var(--M) var(--M), var(--M) var(--M), var(--u) var(--u), var(--u) var(--u);
+    background-position: left var(--ox) bottom var(--oy);
+  }
+  .math-plane-axis-x,
+  .math-plane-axis-y {
+    position: absolute;
+    background: color-mix(in srgb, var(--skin-link) 75%, transparent);
+  }
+  .math-plane-axis-x { left: 0; right: 0; bottom: calc(var(--oy) - 1px); height: 2px; }
+  .math-plane-axis-y { top: 0; bottom: 0; left: var(--ox); width: 2px; }
+}
+
+/* The purchased-book card (PurchasedBook.jsx). JavaScript only sets three variables and one transform each frame:
+   --bm-hue (colour wheel angle), --bm-a (strength of the colour wash), --bm-shadow (floor shadow size).
+   Careful: no overflow other than visible on .bm-card, or the browser flattens the 3D flip. */
+@layer components {
+  .bm {
+    --bm-hue: 200;
+    --bm-a: 0;
+    --bm-shadow: 1;
+    position: relative;
+    display: block;
+    perspective: 700px;
+    cursor: pointer;
+    text-align: left;
+  }
+  .bm-card {
+    position: relative;
+    transform-style: preserve-3d;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 calc(var(--bm-a) * 30px) calc(var(--bm-a) * 6px) hsl(var(--bm-hue) 95% 58% / var(--bm-a));
+  }
+  .bm-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .bm-back {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transform: rotateY(180deg);
+    background: hsl(var(--bm-hue) 90% 72%);
+  }
+  .bm-tint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: hsl(var(--bm-hue) 95% 58% / var(--bm-a));
+  }
+  .bm-shadow {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: -7px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgb(20 18 43 / 0.3);
+    filter: blur(3px);
+    opacity: var(--bm-shadow);
+    transform: scaleX(var(--bm-shadow));
+  }
 }
 
 /* A few scroll-driven effects Tailwind has no utility for.

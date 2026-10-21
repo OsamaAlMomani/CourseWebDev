@@ -226,6 +226,12 @@ export const themes = {
     coverCls: 'rounded-sm border border-teal/60 shadow-[0_0_0_6px_rgba(94,234,212,0.12),0_20px_40px_rgba(0,0,0,0.5)]',
     fanAnim: '',
 
+    // moving background: scientists' quotes drifting behind the hero (see QuoteBackground.jsx)
+    heroQuotes: true,
+    heroShade: 'bg-linear-to-r from-lab/85 via-lab/45 to-lab/10',
+    heroPanel: 'rounded-md border border-teal/30 bg-lab/45 p-6 backdrop-blur-md md:p-8',
+    videoBtn: 'bg-lab/70 text-teal',
+
     pointsBg: 'bg-[#0f3a40] text-white',
     pointTitle: 'font-mono text-base tracking-wide text-teal uppercase',
     pointText: 'text-white/75',

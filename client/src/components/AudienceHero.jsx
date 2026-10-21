@@ -2,6 +2,8 @@ import { useCatalog } from '../context/CatalogContext'
 import { cover } from '../lib/asset'
 import Container from './Container'
 import Button from './Button'
+import BackgroundVideo from './BackgroundVideo'
+import QuoteBackground from './QuoteBackground'
 
 // "Stories that are *all yours!*" -> the starred bit gets the accent style
 const renderHeadline = (text, accent) =>
@@ -10,14 +12,27 @@ const renderHeadline = (text, accent) =>
 export default function AudienceHero({ group, theme }) {
   const { books } = useCatalog()
   const fanBooks = books.filter((b) => b.group === group.id).slice(0, 4)
+  const moving = theme.heroVideo || theme.heroQuotes // this shelf has a moving background
   const gap = fanBooks.length <= 2 ? 130 : 95 // fewer books, wider spread
 
   return (
     <section
-      className={`relative isolate overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 lg:flex lg:min-h-[80svh] lg:items-center ${theme.font} ${theme.heroBg} ${theme.heroPattern}`}
+      className={`relative isolate overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 lg:flex lg:min-h-[80svh] lg:items-center ${theme.font} ${theme.heroBg} ${moving ? '' : theme.heroPattern}`}
     >
+      {/* shelves with a moving background: the video or the quotes, then a dark shade, an optional tint, then the grid pattern on top */}
+      {moving && (
+        <>
+          {theme.heroVideo && (
+            <BackgroundVideo src={theme.heroVideo} poster={theme.heroPoster} className={theme.heroVideoCls} buttonClass={theme.videoBtn} />
+          )}
+          {theme.heroQuotes && <QuoteBackground buttonClass={theme.videoBtn} />}
+          <div className={`absolute inset-0 -z-10 ${theme.heroShade}`} />
+          {theme.heroTint && <div className={`absolute inset-0 -z-10 ${theme.heroTint}`} />}
+          <div className={`absolute inset-0 -z-10 ${theme.heroPattern}`} />
+        </>
+      )}
       <Container className="grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-        <div>
+        <div className={theme.heroPanel ?? ''}>
           <p className={`mb-6 ${theme.kicker}`}>{group.kicker}</p>
           <h1
             className={`mb-6 text-[clamp(3rem,13vw,5.5rem)] font-extrabold md:text-[clamp(4rem,10vw,6.5rem)] lg:text-[clamp(3.5rem,7vw,6.5rem)] ${theme.heroHeading}`}

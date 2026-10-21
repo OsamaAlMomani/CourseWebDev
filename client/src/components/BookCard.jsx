@@ -3,10 +3,13 @@ import { useShop } from '../context/ShopContext'
 import { formatPrice } from '../lib/format'
 import { cover } from '../lib/asset'
 import Stepper from './Stepper'
+import PurchasedBook from './PurchasedBook'
 
 export default function BookCard({ book, theme }) {
-  const { addToCart, toggleWishlist, isSaved } = useShop()
+  const { addToCart, toggleWishlist, isSaved, isPurchased } = useShop()
   const saved = isSaved(book.id)
+  // a book this person has bought before: its cover keeps flipping (maths in lib/bookMotion.js)
+  const owned = isPurchased(book.id)
   const soldOut = book.stock === 0
   // every card gets its own copy of this state, so changing one card never touches the others
   const [copies, setCopies] = useState(1)
@@ -37,15 +40,22 @@ export default function BookCard({ book, theme }) {
           <path d="M12 20.5s-7.5-4.6-9-9.4C2 7.7 4.2 5 7.2 5c1.9 0 3.5 1 4.8 3 1.3-2 2.9-3 4.8-3 3 0 5.2 2.7 4.2 6.1-1.5 4.8-9 9.4-9 9.4z" />
         </svg>
       </button>
-      <img
-        src={cover(book.id)}
-        alt={`Cover of ${book.title}`}
-        width="200"
-        height="270"
-        loading="lazy"
-        decoding="async"
-        className="h-auto w-full"
-      />
+      {owned && (
+        <span className="absolute top-3 left-3 z-10 rounded-full bg-white/90 px-2.5 py-1 text-xs font-extrabold text-ink shadow">✓ You own this</span>
+      )}
+      {owned ? (
+        <PurchasedBook book={book} size="fill" loop auto={false} interactive={false} />
+      ) : (
+        <img
+          src={cover(book.id)}
+          alt={`Cover of ${book.title}`}
+          width="200"
+          height="270"
+          loading="lazy"
+          decoding="async"
+          className="h-auto w-full"
+        />
+      )}
       <div className="flex flex-1 flex-col gap-1 p-5">
         <h3 className={`text-xl leading-[1.1] md:text-2xl ${theme.cardTitle}`}>
           {book.title}

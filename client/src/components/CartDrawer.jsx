@@ -6,6 +6,8 @@ import { voices } from '../data/themes'
 import { useSkin } from '../context/SkinContext'
 import Stepper from './Stepper'
 import Button from './Button'
+import MathPlane from './MathPlane'
+import PurchasedBook from './PurchasedBook'
 
 const inputCls = 'skin-input min-h-12 w-full px-3 py-2.5 text-base'
 
@@ -15,6 +17,8 @@ export default function CartDrawer() {
   const ref = useRef(null)
   const [view, setView] = useState('cart')
   const [order, setOrder] = useState(null)
+  // the cart is emptied by checkout, so we keep a copy of the books that were in it for the celebration
+  const [purchased, setPurchased] = useState([])
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   // the dialog sits inside the app's skin wrapper, so it already has the right colours; the words come from the shelf's voice
@@ -33,7 +37,9 @@ export default function CartDrawer() {
     setBusy(true)
     setError('')
     try {
+      const books = cart.items
       setOrder(await checkout(Object.fromEntries(new FormData(e.currentTarget))))
+      setPurchased(books)
       setView('done')
     } catch (err) {
       setError(err.message) // e.g. "Sorry, ... doesn't have enough copies left."
@@ -67,15 +73,20 @@ export default function CartDrawer() {
         </header>
 
         {view === 'done' && order ? (
-          <div className="grid flex-1 content-center gap-3 p-8 text-center">
-            <p className="animate-pop text-6xl motion-reduce:animate-none" aria-hidden="true">📦</p>
+          <MathPlane className="grid flex-1 content-center gap-3 bg-skin-surface p-8 pb-[calc(36px+2rem)] text-center">
+            {/* every book you just bought hops, flips and changes colour, one after the other (maths in lib/bookMotion.js) */}
+            <div className="flex max-h-[min(48dvh,440px)] flex-wrap justify-center gap-x-4 gap-y-8 overflow-y-auto px-2 pt-20 pb-4">
+              {purchased.map((b, i) => (
+                <PurchasedBook key={b.id} book={b} delay={i * 0.18} />
+              ))}
+            </div>
             <p className="font-skin text-3xl font-extrabold">{voice.thanks}</p>
             <p>
               Order <strong>#{order.id}</strong> for <strong>{formatPrice(order.total)}</strong> {voice.thanksLine}
               You can find it under <a href="#/account" onClick={close} className="font-bold text-skin-link underline">My account</a>.
             </p>
             <Button as="button" type="button" variant="skin" large onClick={close}>Keep shopping</Button>
-          </div>
+          </MathPlane>
         ) : !user ? (
           <div className="grid flex-1 content-center justify-items-center gap-4 p-8 text-center">
             <p className="text-6xl" aria-hidden="true">{voice.icon}</p>

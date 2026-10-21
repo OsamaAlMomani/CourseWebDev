@@ -8,6 +8,8 @@ import { formatDate, formatPrice } from '../lib/format'
 import { voices } from '../data/themes'
 import Container from './Container'
 import Button from './Button'
+import MathPlane from './MathPlane'
+import PurchasedBook from './PurchasedBook'
 
 const tabs = [
   { id: 'overview', label: 'Overview' },
@@ -53,6 +55,14 @@ function OrderCard({ o }) {
         ))}
       </ul>
       <p className="mt-3 flex justify-between font-extrabold"><span>Total</span><span>{formatPrice(o.total)}</span></p>
+      <div className="mt-4 border-t border-skin-line pt-3">
+        <p className="text-sm text-skin-muted">Tap a book to see it celebrate again.</p>
+        <div className="flex flex-wrap gap-4 pt-16 pb-3">
+          {o.items.map((i) => (
+            <PurchasedBook key={i.bookId} size="sm" auto={false} book={{ id: i.bookId, title: i.title }} />
+          ))}
+        </div>
+      </div>
       <p className="mt-1 text-sm text-skin-muted">Shipping to {o.shipTo.name}, {o.shipTo.country}</p>
     </li>
   )
@@ -97,7 +107,7 @@ export default function AccountPage() {
   const spent = orders.list.reduce((sum, o) => sum + o.total, 0)
 
   return (
-    <section className="animate-page bg-skin-bg py-10 text-skin-ink motion-reduce:animate-none md:py-16">
+    <MathPlane as="section" className="animate-page bg-skin-bg pt-10 pb-[calc(36px+2.5rem)] text-skin-ink motion-reduce:animate-none md:pt-16 md:pb-[calc(36px+4rem)]">
       <Container className="grid gap-8">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -198,6 +208,6 @@ export default function AccountPage() {
           </div>
         )}
       </Container>
-    </section>
+    </MathPlane>
   )
 }

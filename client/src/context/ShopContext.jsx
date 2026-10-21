@@ -14,6 +14,7 @@ export function ShopProvider({ children }) {
 
   const [cart, setCart] = useState(emptyCart)
   const [wishlist, setWishlist] = useState([])
+  const [purchased, setPurchased] = useState(() => new Set()) // ids of every book this person has ordered before
   const [authMode, setAuthMode] = useState(null) // null (closed) | 'signin' | 'signup'
   const [cartOpen, setCartOpen] = useState(false)
   const [notice, setNotice] = useState('')
@@ -31,14 +32,23 @@ export function ShopProvider({ children }) {
     if (!user) {
       setCart(emptyCart)
       setWishlist([])
+      setPurchased(new Set())
       return
     }
     let ignore = false // if the user changes before the answer arrives, drop the old answer
-    Promise.all([api('/cart'), api('/wishlist')])
-      .then(([c, w]) => {
+    Promise.all([
+      api('/cart'),
+      api('/wishlist'),
+      // past orders -> the ids of the books in them (if this one fails the shelves just show no "owned" books)
+      api('/orders')
+        .then((orders) => orders.flatMap((o) => o.items.map((i) => i.bookId)))
+        .catch(() => []),
+    ])
+      .then(([c, w, ownedIds]) => {
         if (ignore) return
         setCart(c)
         setWishlist(w.items)
+        setPurchased(new Set(ownedIds))
       })
       .catch(() => notify('Could not load your cart. Please refresh.', 'error'))
     return () => {
@@ -95,10 +105,13 @@ export function ShopProvider({ children }) {
       // checkout throws on purpose: the cart drawer shows the error inside the form
       checkout: async (form) => {
         const order = await api('/orders', { method: 'POST', body: form })
+        // the books in the cart are now owned, so the shelves can start celebrating them straight away
+        setPurchased((prev) => new Set([...prev, ...cart.items.map((i) => i.id)]))
         setCart(emptyCart)
         return order
       },
 
+      isPurchased: (bookId) => purchased.has(bookId),
       wishlist,
       isSaved: (bookId) => wishlist.some((b) => b.id === bookId),
       toggleWishlist: (book) =>
@@ -110,7 +123,7 @@ export function ShopProvider({ children }) {
         }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, sessionLoading, authMode, cartOpen, notice, noticeTone, cart, wishlist],
+    [user, sessionLoading, authMode, cartOpen, notice, noticeTone, cart, wishlist, purchased],
   )
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>
