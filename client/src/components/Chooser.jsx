@@ -19,7 +19,7 @@ export default function Chooser() {
   // the Kids Corner has its own banner right below, so the tiles here are teens to scientists
   const general = groups.filter((g) => g.world === 'general')
   return (
-    <section id="choose" className="bg-paper [background-image:radial-gradient(rgba(91,61,245,0.12)_2px,transparent_2px)] [background-size:30px_30px] py-16 md:py-28">
+    <section id="choose" className="bg-paper [background-image:radial-gradient(rgba(15,109,187,0.10)_2px,transparent_2px)] [background-size:30px_30px] py-16 md:py-28">
       <Container>
         <h2 className="font-display text-[clamp(2.6rem,11vw,6rem)] leading-[0.92] font-extrabold tracking-[-0.045em]">
           Find your shelf

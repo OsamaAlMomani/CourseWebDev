@@ -61,14 +61,8 @@ export default function AudienceHero({ group, theme }) {
                 width="200"
                 height="270"
                 decoding="async"
-                className={`absolute bottom-0 h-auto w-32 min-[500px]:w-44 md:w-56 lg:w-52 xl:w-64 ${theme.coverCls} ${theme.fanAnim}`}
-                style={{
-                  '--x': `${spot * gap}px`,
-                  '--r': `${spot * 9}deg`,
-                  zIndex: 10 - Math.round(Math.abs(spot) * 2),
-                  animationDelay: `${-i * 1.2}s`,
-                  transform: 'translateX(calc(var(--x) * var(--s))) rotate(var(--r))',
-                }}
+                className={`fan-cover absolute bottom-0 h-auto w-32 min-[500px]:w-44 md:w-56 lg:w-52 xl:w-64 ${theme.coverCls} ${theme.fanAnim}`}
+                style={{ '--x': `${spot * gap}px`, '--r': `${spot * 9}deg`, '--z': 10 - Math.round(Math.abs(spot) * 2), '--delay': `${-i * 1.2}s` }}
               />
             )
           })}

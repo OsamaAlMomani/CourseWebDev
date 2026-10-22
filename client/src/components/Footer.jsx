@@ -19,14 +19,14 @@ export default function Footer() {
   return (
     <footer className="bg-skin-foot pb-[calc(5rem_+_env(safe-area-inset-bottom,0px))] text-skin-foot-ink">
       {/* one stripe, one colour per reader group */}
-      <div aria-hidden="true" className="mb-16 h-1.5 bg-[linear-gradient(90deg,#ff6b57_0_20%,#c6ff3d_20%_40%,#d4a84b_40%_60%,#2563eb_60%_80%,#5eead4_80%)]" />
+      <div aria-hidden="true" className="mb-16 h-1.5 bg-[linear-gradient(90deg,#8fd0ff,#cfe8ff_50%,#ffb4ae)]" />
       <Container className="mb-7 grid grid-cols-[minmax(0,1fr)] gap-7 sm:grid-cols-[2fr_1fr_1fr]">
         <div>
-          <h3 className="mb-3 font-skin text-3xl font-extrabold text-white">Global<span className="text-skin-foot-pop">Books</span></h3>
+          <h3 className="mb-3 font-skin text-3xl font-extrabold text-ink">Global<span className="text-skin-foot-pop">Books</span></h3>
           <p>Your worldwide bookstore. Stories and knowledge across borders.</p>
         </div>
         <div>
-          <h3 className="mb-2.5 font-bold text-white">Shop</h3>
+          <h3 className="mb-2.5 font-bold text-ink">Shop</h3>
           <ul>
             {groups.filter((g) => g.world === 'general').map((g) => (
               <li key={g.id} className="mb-0.5">
@@ -41,7 +41,7 @@ export default function Footer() {
           </ul>
         </div>
         <div>
-          <h3 className="mb-2.5 font-bold text-white">Support</h3>
+          <h3 className="mb-2.5 font-bold text-ink">Support</h3>
           <ul>
             {support.map((s) => (
               <li key={s.label} className="mb-0.5">
@@ -51,7 +51,7 @@ export default function Footer() {
           </ul>
         </div>
       </Container>
-      <Container as="p" className="border-t border-white/10 pt-5 text-center text-[0.85rem]">
+      <Container as="p" className="border-t border-ink/10 pt-5 text-center text-[0.85rem]">
         &copy; 2026 GlobalBooks. All rights reserved.
       </Container>
       <Container className="mt-4 flex justify-center">

@@ -2,7 +2,7 @@
 const variants = {
   accent: 'rounded-full bg-sun text-ink',
   primary: 'rounded-full bg-blue text-white',
-  coral: 'rounded-full bg-coral text-white',
+  coral: 'rounded-full bg-coral text-ink',
   // these two follow whichever shelf you're on (colours, corners, shadow all come from the skin)
   skin: 'skin-btn',
   pop: 'skin-btn skin-btn-pop',

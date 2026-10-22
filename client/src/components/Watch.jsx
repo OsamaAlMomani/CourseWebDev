@@ -26,7 +26,7 @@ export default function Watch() {
           </video>
         </div>
         <div>
-          <p className="mb-2 text-base font-bold text-coral" aria-live="polite">
+          <p className="mb-2 text-base font-bold text-[#b3363d]" aria-live="polite">
             {playing ? 'Now playing' : 'Tap play to watch'}
           </p>
           <h2 className="font-display text-[clamp(2.4rem,9vw,4.5rem)] leading-[0.95] font-extrabold tracking-[-0.035em] md:text-[clamp(2.2rem,4.6vw,4.5rem)]">

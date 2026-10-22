@@ -12,7 +12,9 @@
     "start": "node src/index.js",
     "db:migrate": "node --env-file=.env scripts/migrate.js",
     "db:seed": "node --env-file=.env scripts/seed.js",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:import-research": "node --env-file=.env scripts/import-research.js",
+    "db:seed-research": "node --env-file=.env scripts/seed-research.js",
+    "db:setup": "npm run db:migrate && npm run db:seed && npm run db:seed-research"
   },
   "dependencies": {
     "better-auth": "^1.3.0",

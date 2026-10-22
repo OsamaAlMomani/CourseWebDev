@@ -41,7 +41,7 @@ export default function App() {
   // The whole site is built from the catalog, so wait for it. (The free database sleeps when idle; the first call can take a few seconds.)
   if (status !== 'ready') {
     return (
-      <div className="grid min-h-dvh place-items-center bg-ink p-6 text-center text-white">
+      <div className="grid min-h-dvh place-items-center bg-paper p-6 text-center text-ink">
         {status === 'error' ? (
           <div className="grid gap-4">
             <p className="font-display text-3xl font-extrabold">We couldn’t reach the shop.</p>

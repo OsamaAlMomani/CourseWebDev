@@ -23,19 +23,19 @@ export default function MathPlane({ as: Tag = 'div', unit = 24, major = 4, xLabe
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 select-none">
         <span className="math-plane-axis-x" />
         <span className="math-plane-axis-y" />
-        <span className={`${tick} -translate-x-full`} style={{ left: 'calc(var(--ox) - 6px)', bottom: 'calc(var(--oy) - 18px)' }}>0</span>
+        <span className={`${tick} math-plane-tick-origin -translate-x-full`}>0</span>
         {xs.map((i) => (
-          <span key={`x${i}`} className={`${tick} -translate-x-1/2`} style={{ left: `calc(var(--ox) + ${i * step}px)`, bottom: 'calc(var(--oy) - 20px)' }}>
+          <span key={`x${i}`} className={`${tick} math-plane-tick-x -translate-x-1/2`} style={{ '--i': i }}>
             {i * step}
           </span>
         ))}
         {ys.map((i) => (
-          <span key={`y${i}`} className={`${tick} text-right`} style={{ left: 0, width: 'calc(var(--ox) - 8px)', bottom: `calc(var(--oy) + ${i * step - 8}px)` }}>
+          <span key={`y${i}`} className={`${tick} math-plane-tick-y text-right`} style={{ '--i': i }}>
             {i * step}
           </span>
         ))}
-        <span className={`${tick} font-bold italic`} style={{ right: 12, bottom: 'calc(var(--oy) + 6px)' }}>{xLabel}</span>
-        <span className={`${tick} font-bold italic`} style={{ left: 'calc(var(--ox) + 8px)', top: 8 }}>{yLabel}</span>
+        <span className={`${tick} math-plane-label-x font-bold italic`}>{xLabel}</span>
+        <span className={`${tick} math-plane-label-y font-bold italic`}>{yLabel}</span>
       </div>
       {children}
     </Tag>

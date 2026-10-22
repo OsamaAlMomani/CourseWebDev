@@ -30,8 +30,8 @@ export default function QuoteBackground({ buttonClass = 'bg-lab/70 text-teal' })
         {rows.map((row, r) => (
           <div
             key={r}
-            className={`flex w-max whitespace-nowrap font-science italic motion-reduce:animate-none ${row.dir} ${row.size} ${row.tone} ${hold}`}
-            style={{ animationDuration: `${row.secs}s` }}
+            className={`quote-row flex w-max whitespace-nowrap font-display italic motion-reduce:animate-none ${row.dir} ${row.size} ${row.tone} ${hold}`}
+            style={{ '--secs': `${row.secs}s` }}
           >
             {row.items.map((q, i) => (
               <span key={i} className="mr-16 shrink-0">

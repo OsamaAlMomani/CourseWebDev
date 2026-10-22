@@ -116,7 +116,7 @@ const baseGroups = [
     ],
   },
   {
-    id: 'scientists', title: 'Scientists', homeLine: 'Research reads and first principles',
+    id: 'scientists', title: 'Research & Book', homeLine: 'Research reads and first principles',
     kicker: 'Reading list', headline: 'Rigour, *without the hype.*',
     intro: 'Field notes and first principles, written by people who do the work, for people who do the work.',
     cta: 'View the reading list', shelfTitle: 'The reading list', shelfNote: 'Science and machine learning, from the field to first principles.',

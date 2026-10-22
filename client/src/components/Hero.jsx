@@ -19,21 +19,21 @@ export default function Hero() {
   return (
     <section
       id="top"
-      className="relative isolate flex overflow-hidden bg-ink pt-12 pb-16 text-white md:pt-20 md:pb-24 lg:min-h-[85svh] lg:items-center short-landscape:pt-6 short-landscape:pb-8"
+      className="relative isolate flex overflow-hidden bg-paper pt-12 pb-16 text-ink md:pt-20 md:pb-24 lg:min-h-[85svh] lg:items-center short-landscape:pt-6 short-landscape:pb-8"
     >
       <BackgroundVideo src="video/hero.mp4" poster="video/hero-poster.jpg" />
-      {/* dark gradient so the text stays readable over the video */}
-      <div className="absolute inset-0 -z-10 bg-linear-to-b from-ink/85 to-ink/50 lg:bg-linear-to-r lg:from-ink/90 lg:via-ink/45 lg:via-70% lg:to-ink/20" />
+      {/* light gradient so the dark text stays readable over the video */}
+      <div className="absolute inset-0 -z-10 bg-linear-to-b from-white/90 to-[#dff1ff]/70 lg:bg-linear-to-r lg:from-white/95 lg:via-[#e8f4ff]/75 lg:via-70% lg:to-[#dff1ff]/60" />
 
       <Container className="grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center short-landscape:grid-cols-[minmax(0,1fr)]">
         <div>
           <h1 className="mb-6 font-display text-[clamp(3rem,13vw,5.5rem)] leading-[0.92] font-extrabold tracking-[-0.045em] md:text-[clamp(4rem,10vw,6.5rem)] lg:text-[clamp(3.5rem,7vw,6.5rem)]">
-            Books for <span className="text-sun">every reader,</span> delivered anywhere.
+            Books for <span className="text-blue">every reader,</span> delivered anywhere.
           </h1>
-          <p className="mb-8 max-w-[40ch] text-xl text-[#e3e0ff] md:text-2xl">
+          <p className="mb-8 max-w-[40ch] text-xl text-ink/80 md:text-2xl">
             Picture books to textbooks. Shipped to over 180 countries.
           </p>
-          <Button large href="#choose" className="shadow-[0_10px_0_rgba(0,0,0,0.25)]">
+          <Button large variant="primary" href="#choose" className="shadow-[0_10px_24px_rgba(18,38,63,0.18)]">
             Choose your shelf
           </Button>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -61,18 +61,12 @@ export default function Hero() {
               width="200"
               height="270"
               decoding="async"
-              className="absolute bottom-0 h-auto w-32 animate-float rounded-xl shadow-[0_24px_48px_rgba(0,0,0,0.5)] motion-reduce:animate-none min-[500px]:w-44 md:w-56 lg:w-52 xl:w-64"
-              style={{
-                '--x': `${c.x}px`,
-                '--r': `${c.r}deg`,
-                zIndex: c.z,
-                animationDelay: `${c.delay}s`,
-                transform: 'translateX(calc(var(--x) * var(--s))) rotate(var(--r))',
-              }}
+              className="fan-cover absolute bottom-0 h-auto w-32 animate-float rounded-xl shadow-[0_24px_48px_rgba(18,38,63,0.30)] motion-reduce:animate-none min-[500px]:w-44 md:w-56 lg:w-52 xl:w-64"
+              style={{ '--x': `${c.x}px`, '--r': `${c.r}deg`, '--z': c.z, '--delay': `${c.delay}s` }}
             />
           ))}
           {/* sticker */}
-          <div className="absolute top-0 right-0 z-10 grid size-24 rotate-12 place-content-center rounded-full bg-coral text-center font-display leading-none font-extrabold md:size-32 lg:right-2">
+          <div className="absolute top-0 right-0 z-10 grid size-24 rotate-12 place-content-center rounded-full bg-coral text-center text-ink font-display leading-none font-extrabold md:size-32 lg:right-2">
             <span className="text-3xl md:text-4xl">180+</span>
             <span className="text-sm md:text-base">countries</span>
           </div>

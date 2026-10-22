@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { BOOK_MOTION, checkInvariants, derived, hopStart, jumpHeight, glowAlpha, sample, spinAngle, totalTime } from '../lib/bookMotion'
 import Container from './Container'
-import MathPlane, { PLANE_ORIGIN } from './MathPlane'
+import MathPlane from './MathPlane'
 import PurchasedBook from './PurchasedBook'
 
 // The Motion Lab (#/motion-lab). It exists so the purchased-book animation can be judged by its numbers, not by squinting:
@@ -100,7 +100,7 @@ export default function MotionLab() {
         </header>
 
         <MathPlane unit={16} major={4} xLabel="x (px)" yLabel="h (px)" className="skin-card min-h-[420px] [box-shadow:none]">
-          <div className="relative z-0 flex h-full min-h-[420px] items-end gap-12" style={{ paddingLeft: PLANE_ORIGIN.x + 56, paddingBottom: PLANE_ORIGIN.y, paddingTop: 24 }}>
+          <div className="motion-stage relative z-0 flex h-full min-h-[420px] items-end gap-12" style={{ '--hop': `${params.hopHeight}px` }}>
             <PurchasedBook
               book={sampleBook}
               auto={false}
@@ -109,10 +109,10 @@ export default function MotionLab() {
               params={params}
               onFrame={mode === 'play' ? setClock : undefined}
             />
-            <span className="absolute right-4 font-mono text-xs font-bold text-skin-muted" style={{ bottom: PLANE_ORIGIN.y + params.hopHeight + 4 }}>
+            <span className="motion-hop-label absolute right-4 font-mono text-xs font-bold text-skin-muted">
               dashed line: H = {params.hopHeight} px
             </span>
-            <span aria-hidden="true" className="pointer-events-none absolute right-0 left-0 border-t-2 border-dashed border-skin-link/50" style={{ bottom: PLANE_ORIGIN.y + params.hopHeight }} />
+            <span aria-hidden="true" className="motion-hop-line pointer-events-none absolute right-0 left-0 border-t-2 border-dashed border-skin-link/50" />
           </div>
         </MathPlane>
 

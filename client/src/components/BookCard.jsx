@@ -69,7 +69,7 @@ export default function BookCard({ book, theme }) {
           {book.author} · {book.detail}
         </p>
         <p className={`mt-1 ${theme.cardBlurb}`}>{book.blurb}</p>
-        {book.stock > 0 && book.stock <= 5 && <p className="mt-1 text-sm font-bold text-coral">Only {book.stock} left</p>}
+        {book.stock > 0 && book.stock <= 5 && <p className="mt-1 text-sm font-bold text-[#b3363d]">Only {book.stock} left</p>}
 
         <div className="mt-auto flex flex-col gap-3 pt-4">
           <div className="flex flex-wrap items-center justify-between gap-2">

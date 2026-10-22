@@ -249,7 +249,7 @@ function Mug({ className, steam = '#fff' }) {
 
 function Sparkle({ className, delay = '0s' }) {
   return (
-    <svg viewBox="0 0 20 20" className={`animate-twinkle motion-reduce:animate-none ${className}`} style={{ animationDelay: delay }}>
+    <svg viewBox="0 0 20 20" className={`sparkle animate-twinkle motion-reduce:animate-none ${className}`} style={{ '--delay': delay }}>
       <path d="M10 0 L12 8 L20 10 L12 12 L10 20 L8 12 L0 10 L8 8 Z" fill="#ffd23f" />
     </svg>
   )
@@ -268,10 +268,10 @@ function AdultsDecor() {
   return (
     <>
       {/* big globe in the corner */}
-      <Globe className="absolute -top-8 -right-16 w-52 animate-bob text-sun/40 [--tilt:6deg] motion-reduce:animate-none md:-right-12 md:w-80 xl:right-[4%] xl:w-[26rem]" />
+      <Globe className="absolute -top-8 -right-16 w-52 animate-bob text-blue/40 [--tilt:6deg] motion-reduce:animate-none md:-right-12 md:w-80 xl:right-[4%] xl:w-[26rem]" />
 
       {/* reading lamp in the side margin */}
-      <Lamp className="absolute top-16 left-[1%] hidden w-20 text-sun/70 xl:block" />
+      <Lamp className="absolute top-16 left-[1%] hidden w-20 text-blue/70 xl:block" />
 
       {/* twinkling stars */}
       <Sparkle className="absolute top-[8%] left-[44%] w-4" />
@@ -286,8 +286,8 @@ function AdultsDecor() {
           {spines.map((s, i) => (
             <span
               key={i}
-              className={`shrink-0 rounded-t-sm ${s.color} ${s.lean ? 'origin-bottom-left rotate-12' : ''}`}
-              style={{ width: s.w, height: `${s.h}%` }}
+              className={`book-spine shrink-0 rounded-t-sm ${s.color} ${s.lean ? 'origin-bottom-left rotate-12' : ''}`}
+              style={{ '--w': `${s.w}px`, '--h': `${s.h}%` }}
             />
           ))}
         </div>

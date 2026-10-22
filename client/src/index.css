@@ -1,41 +1,86 @@
 @import "tailwindcss";
 
-/* Our design tokens. Tailwind turns each --color-* into bg-*, text-*, border-* classes
-   (so --color-sun gives us bg-sun, text-sun and so on). */
+/* ==============================================================================
+   GLOBALBOOKS: index.css  (the ONLY stylesheet of the project)
+   ==============================================================================
+   Imported once in src/main.jsx. Components use Tailwind utility classes for
+   layout/spacing/colour, and everything else lives here: design tokens, base
+   rules, shared components, animations, per-page styles and the small classes
+   that replaced inline style={{ }} props.
+
+   TABLE OF CONTENTS
+     1. Design tokens ........ colours, fonts, animations          (every page)
+     2. Skin tokens .......... colours that follow the page        (every page)
+     3. Small animations ..... bump / pop / rise-in / page / hop   (every page)
+     4. Custom variants ...... short-landscape                     (Home hero)
+     5. Base styles .......... html, body, images, focus ring      (every page)
+     6. Skin values .......... the single site-wide look           (every page)
+     7. Shared components .... skin-card, skin-btn, skin-input, drawer, popup
+                               (Cart drawer, Sign in, Account, Contact, Toast)
+     8. Page: Home ........... fanned covers, kids picks, quote rows, decor
+     9. Page: Motion lab ..... maths plane, purchased book, hop guide
+    10. Scroll effects ....... reveal on scroll, chat button fade
+    11. Page: Research & Book  (.rb) and its dialogs (.rb-dialog)
+    12. Accessibility ........ reduced motion, locked page behind dialogs
+
+   HOW TO READ THE "Used by" LINES
+     A page is a route in src/components/Main.jsx: Home, a shelf page
+     (AudiencePage), My account, Motion lab (#/motion-lab) and Research & Book.
+   ============================================================================== */
+
+/* ==============================================================================
+   1. DESIGN TOKENS: colours, fonts and animation names
+   Used by: every page
+   Tailwind turns each --color-* into bg-*, text-*, border-* classes
+   (so --color-sun gives us bg-sun, text-sun and so on).
+   ============================================================================== */
 @theme {
-  --color-ink: #14122b;
-  --color-ink-soft: #2a2750;
-  --color-paper: #f5f3ff;
-  --color-blue: #3d5afe;
-  --color-coral: #ff6b57;
-  --color-sun: #ffd23f;
-  --color-violet: #5b3df5;
-  --color-mint: #b9f3dd;
-  --color-muted: #6b6a85;
-  --color-line: #e4e0f7;
+  /* main palette (all pages) */
+  --color-ink: #12263f;
+  --color-ink-soft: #dcefff;
+  --color-paper: #f2f9ff;
+  --color-blue: #0f6dbb;
+  --color-coral: #ffb4ae;
+  --color-sun: #cfe8ff;
+  --color-violet: #7cc4ff;
+  --color-mint: #bdeedb;
+  --color-muted: #4a6580;
+  --color-line: #cfe6fa;
 
-  /* teens */
-  --color-neon: #c6ff3d;
-  --color-hot: #ff2e93;
-  /* adults */
-  --color-cream: #f6efe2;
-  --color-gold: #d4a84b;
-  --color-navy: #0e1630;
-  /* students */
-  --color-notebook: #fffdf5;
-  /* scientists */
-  --color-lab: #0a2a2f;
-  --color-teal: #5eead4;
-  --color-amber: #f5a524;
+  /* teens shelf */
+  --color-neon: #7cc4ff;
+  --color-hot: #ff9f98;
+  /* adults shelf */
+  --color-cream: #fff1ef;
+  --color-gold: #5bb0ee;
+  --color-navy: #12263f;
+  /* students shelf */
+  --color-notebook: #f8fcff;
+  /* Research & Book page (same light palette as the rest of the site) */
+  --color-rb-paper: #f2f9ff;
+  --color-rb-ink: #12263f;
+  --color-rb-rose: #ffd4d0;
+  --color-rb-coral: #ff9f98;
+  --color-rb-blue: #0f6dbb;
+  --color-rb-mint: #bdeedb;
+  --color-rb-sky: #cfe8ff;
+  /* scientists shelf */
+  --color-lab: #12263f;
+  --color-teal: #2f9bea;
+  --color-amber: #ffb4ae;
 
+  /* fonts (loaded from Google Fonts in index.html) */
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-kids: "Fredoka", "Avenir Next", system-ui, sans-serif;
   --font-teens: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-adults: "Fraunces", Georgia, "Times New Roman", serif;
   --font-science: "IBM Plex Serif", Georgia, serif;
+  --font-news: var(--font-display);
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
+  /* Looping animations: float = Hero + Audience hero covers, marquee-* = Marquee + QuoteBackground rows,
+     sway = FeatureBook, bob = Decor globe + SearchModal, steam = Decor mug, twinkle = Decor sparkles */
   --animate-float: float 6s ease-in-out infinite alternate;
   --animate-marquee-slow: marquee 80s linear infinite;
   --animate-marquee-rev: marquee-rev 80s linear infinite;
@@ -73,8 +118,12 @@
   }
 }
 
-/* The "skin" layer. Every colour that belongs to the app itself (cart, sign in, account, toast, contact, footer)
-   comes from these tokens, so it can change with the page you are on. bg-skin-surface, text-skin-ink and so on. */
+
+/* ==============================================================================
+   2. SKIN TOKENS: colours that follow the page you are on
+   Used by: Cart drawer, Sign in, Account, Toast, Contact, Footer
+   bg-skin-surface, text-skin-ink and so on. The real values are set in section 6.
+   ============================================================================== */
 @theme inline {
   --color-skin-bg: var(--skin-bg);
   --color-skin-surface: var(--skin-surface);
@@ -102,8 +151,13 @@
   --shadow-skin: var(--skin-shadow);
 }
 
-/* little bits of life */
+
+/* ==============================================================================
+   3. SMALL ANIMATIONS: little bits of life
+   Used by: bump = Header cart badge, pop = buttons/toasts/cards, rise-in = Toast, page = My account, hop = loading books
+   ============================================================================== */
 @theme {
+  /* animation names (the keyframes are right below) */
   --animate-bump: bump 0.45s ease-out;
   --animate-pop: pop 0.4s ease-out;
   --animate-rise-in: rise-in 0.35s ease-out;
@@ -134,18 +188,30 @@
   }
 }
 
-/* phones held sideways: very little height, so we trim the hero */
+
+/* ==============================================================================
+   4. CUSTOM VARIANTS
+   Used by: Home hero (Hero.jsx)
+   ============================================================================== */
+/* short-landscape: phones held sideways have very little height, so the hero fan of covers is hidden */
 @custom-variant short-landscape (@media (orientation: landscape) and (max-height: 520px));
 
+/* ==============================================================================
+   5. BASE STYLES: html, body, images and the keyboard focus ring
+   Used by: every page
+   ============================================================================== */
 @layer base {
+  /* page side padding: at least 1rem, and never under a phone notch */
   :root {
     --gutter: max(1rem, 4vw, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
   }
+  /* smooth anchor scrolling; scroll-padding keeps targets from hiding under the sticky header */
   html {
     scroll-behavior: smooth;
     scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 70px);
     -webkit-text-size-adjust: 100%;
   }
+  /* page background, text colour and font. overflow-x: clip stops sideways scrolling */
   body {
     font-family: var(--font-body);
     background: var(--color-paper);
@@ -154,210 +220,65 @@
     overflow-x: clip;
     -webkit-tap-highlight-color: transparent;
   }
+  /* media never overflows its box */
   img, video, svg { display: block; max-width: 100%; }
+  /* visible outline for keyboard users */
   :focus-visible {
     outline: 3px solid var(--color-sun);
     outline-offset: 2px;
   }
 }
 
-/* One block per reader group. Adding a new group look = adding one block here (and one in themes.js). */
+
+/* ==============================================================================
+   6. SKIN VALUES: one look for the whole site
+   Used by: every page (read through the section 2 tokens)
+   Light sky blue, light red, white cards, soft shadows.
+   (The old per-group blocks for kids / teens / adults / students / scientists were removed on purpose.)
+   ============================================================================== */
 @layer base {
-  :root, [data-skin="home"] {
-    --skin-bg: #f5f3ff;
+  :root, [data-skin] {
+    --skin-bg: #f2f9ff;
     --skin-surface: #ffffff;
-    --skin-ink: #14122b;
-    --skin-muted: #6b6a85;
-    --skin-line: #e4e0f7;
-    --skin-edge: #e4e0f7;
-    --skin-accent: #3d5afe;
+    --skin-ink: #12263f;
+    --skin-muted: #4a6580;
+    --skin-line: #cfe6fa;
+    --skin-edge: #cfe6fa;
+    --skin-accent: #0f6dbb;
     --skin-accent-ink: #ffffff;
-    --skin-pop: #ffd23f;
-    --skin-pop-ink: #14122b;
-    --skin-link: #3d5afe;
-    --skin-danger: #d9301f;
-    --skin-deep: #2a2750;
-    --skin-deep-ink: #ffffff;
-    --skin-deep-muted: #c9c6ee;
-    --skin-deep-soft: rgba(255,255,255,0.1);
-    --skin-deep-line: rgba(255,255,255,0.2);
-    --skin-deep-pop: #ffd23f;
-    --skin-foot: #14122b;
-    --skin-foot-ink: #a9a6cf;
-    --skin-foot-pop: #ffd23f;
+    --skin-pop: #ffb4ae;
+    --skin-pop-ink: #12263f;
+    --skin-link: #0f6dbb;
+    --skin-danger: #b3363d;
+    --skin-deep: #e3f2ff;
+    --skin-deep-ink: #12263f;
+    --skin-deep-muted: #36506b;
+    --skin-deep-soft: rgba(18,38,63,0.06);
+    --skin-deep-line: rgba(18,38,63,0.16);
+    --skin-deep-pop: #0f6dbb;
+    --skin-foot: #e3f2ff;
+    --skin-foot-ink: #36506b;
+    --skin-foot-pop: #0f6dbb;
     --skin-font: var(--font-display);
-    --skin-radius: 28px;
+    --skin-radius: 24px;
     --skin-bw: 1px;
-    --skin-shadow: 0 14px 34px rgba(20,18,43,0.12);
+    --skin-shadow: 0 14px 34px rgba(18,38,63,0.10);
     --skin-btn-radius: 9999px;
-    --skin-btn-shadow: none;
-    --skin-input-bg: #f5f3ff;
-    --skin-input-radius: 12px;
-  }
-
-  [data-skin="kids"] {
-    --skin-bg: #e6f6ff;
-    --skin-surface: #ffffff;
-    --skin-ink: #14122b;
-    --skin-muted: #4f4e6b;
-    --skin-line: #bfe6fa;
-    --skin-edge: #14122b;
-    --skin-accent: #ff6b57;
-    --skin-accent-ink: #ffffff;
-    --skin-pop: #ffd23f;
-    --skin-pop-ink: #14122b;
-    --skin-link: #c2331f;
-    --skin-danger: #c2331f;
-    --skin-deep: #7dd3fc;
-    --skin-deep-ink: #14122b;
-    --skin-deep-muted: rgba(20,18,43,0.8);
-    --skin-deep-soft: rgba(255,255,255,0.6);
-    --skin-deep-line: #14122b;
-    --skin-deep-pop: #14122b;
-    --skin-foot: #14122b;
-    --skin-foot-ink: #d8d6f5;
-    --skin-foot-pop: #ffd23f;
-    --skin-font: var(--font-kids);
-    --skin-radius: 32px;
-    --skin-bw: 4px;
-    --skin-shadow: 0 10px 0 #14122b;
-    --skin-btn-radius: 9999px;
-    --skin-btn-shadow: 0 5px 0 #14122b;
-    --skin-input-bg: #f3fbff;
-    --skin-input-radius: 18px;
-  }
-
-  [data-skin="teens"] {
-    --skin-bg: #150533;
-    --skin-surface: #22093f;
-    --skin-ink: #ffffff;
-    --skin-muted: rgba(255,255,255,0.68);
-    --skin-line: rgba(198,255,61,0.35);
-    --skin-edge: #c6ff3d;
-    --skin-accent: #c6ff3d;
-    --skin-accent-ink: #0d0221;
-    --skin-pop: #ff2e93;
-    --skin-pop-ink: #ffffff;
-    --skin-link: #c6ff3d;
-    --skin-danger: #ff7aa8;
-    --skin-deep: #0d0221;
-    --skin-deep-ink: #ffffff;
-    --skin-deep-muted: rgba(255,255,255,0.75);
-    --skin-deep-soft: rgba(255,255,255,0.06);
-    --skin-deep-line: rgba(198,255,61,0.5);
-    --skin-deep-pop: #c6ff3d;
-    --skin-foot: #070112;
-    --skin-foot-ink: rgba(255,255,255,0.7);
-    --skin-foot-pop: #c6ff3d;
-    --skin-font: var(--font-teens);
-    --skin-radius: 12px;
-    --skin-bw: 2px;
-    --skin-shadow: 6px 6px 0 #ff2e93;
-    --skin-btn-radius: 8px;
-    --skin-btn-shadow: 4px 4px 0 #ff2e93;
-    --skin-input-bg: #150533;
-    --skin-input-radius: 8px;
-  }
-
-  [data-skin="adults"] {
-    --skin-bg: #f6efe2;
-    --skin-surface: #fffaf0;
-    --skin-ink: #0e1630;
-    --skin-muted: rgba(14,22,48,0.65);
-    --skin-line: rgba(212,168,75,0.45);
-    --skin-edge: rgba(212,168,75,0.7);
-    --skin-accent: #0e1630;
-    --skin-accent-ink: #f6efe2;
-    --skin-pop: #d4a84b;
-    --skin-pop-ink: #0e1630;
-    --skin-link: #9a6b12;
-    --skin-danger: #a32020;
-    --skin-deep: #0e1630;
-    --skin-deep-ink: #f6efe2;
-    --skin-deep-muted: rgba(246,239,226,0.75);
-    --skin-deep-soft: rgba(246,239,226,0.06);
-    --skin-deep-line: rgba(212,168,75,0.5);
-    --skin-deep-pop: #d4a84b;
-    --skin-foot: #080d1f;
-    --skin-foot-ink: rgba(246,239,226,0.7);
-    --skin-foot-pop: #d4a84b;
-    --skin-font: var(--font-adults);
-    --skin-radius: 4px;
-    --skin-bw: 1px;
-    --skin-shadow: 0 20px 40px rgba(14,22,48,0.25);
-    --skin-btn-radius: 2px;
-    --skin-btn-shadow: none;
-    --skin-input-bg: #ffffff;
-    --skin-input-radius: 2px;
-  }
-
-  [data-skin="students"] {
-    --skin-bg: #fffdf5;
-    --skin-surface: #ffffff;
-    --skin-ink: #14122b;
-    --skin-muted: #5d5c78;
-    --skin-line: rgba(37,99,235,0.25);
-    --skin-edge: #14122b;
-    --skin-accent: #2563eb;
-    --skin-accent-ink: #ffffff;
-    --skin-pop: #fde047;
-    --skin-pop-ink: #14122b;
-    --skin-link: #2563eb;
-    --skin-danger: #c62828;
-    --skin-deep: #2563eb;
-    --skin-deep-ink: #ffffff;
-    --skin-deep-muted: rgba(255,255,255,0.9);
-    --skin-deep-soft: rgba(255,255,255,0.14);
-    --skin-deep-line: rgba(255,255,255,0.45);
-    --skin-deep-pop: #fde047;
-    --skin-foot: #14122b;
-    --skin-foot-ink: #d8d6f5;
-    --skin-foot-pop: #fde047;
-    --skin-font: var(--font-display);
-    --skin-radius: 16px;
-    --skin-bw: 2px;
-    --skin-shadow: 6px 6px 0 #14122b;
-    --skin-btn-radius: 12px;
-    --skin-btn-shadow: 4px 4px 0 #14122b;
-    --skin-input-bg: #fffdf5;
-    --skin-input-radius: 10px;
-  }
-
-  [data-skin="scientists"] {
-    --skin-bg: #eaf4f2;
-    --skin-surface: #ffffff;
-    --skin-ink: #0a2a2f;
-    --skin-muted: rgba(10,42,47,0.65);
-    --skin-line: rgba(10,42,47,0.2);
-    --skin-edge: rgba(10,42,47,0.3);
-    --skin-accent: #0a2a2f;
-    --skin-accent-ink: #5eead4;
-    --skin-pop: #f5a524;
-    --skin-pop-ink: #0a2a2f;
-    --skin-link: #0f766e;
-    --skin-danger: #b3261e;
-    --skin-deep: #0a2a2f;
-    --skin-deep-ink: #ffffff;
-    --skin-deep-muted: rgba(255,255,255,0.75);
-    --skin-deep-soft: rgba(94,234,212,0.08);
-    --skin-deep-line: rgba(94,234,212,0.4);
-    --skin-deep-pop: #5eead4;
-    --skin-foot: #061a1d;
-    --skin-foot-ink: rgba(255,255,255,0.7);
-    --skin-foot-pop: #5eead4;
-    --skin-font: var(--font-science);
-    --skin-radius: 8px;
-    --skin-bw: 1px;
-    --skin-shadow: 0 14px 30px rgba(10,42,47,0.2);
-    --skin-btn-radius: 6px;
-    --skin-btn-shadow: none;
-    --skin-input-bg: #f2f8f7;
-    --skin-input-radius: 6px;
+    --skin-btn-shadow: 0 6px 16px rgba(15,109,187,0.22);
+    --skin-input-bg: #f7fbff;
+    --skin-input-radius: 14px;
   }
 }
 
-/* Pieces the app shares. They read the skin tokens, so cart, sign in and account always match the page. */
+
+/* ==============================================================================
+   7. SHARED COMPONENTS: cards, buttons, inputs, cart drawer, pop-up dialogs
+   Used by: skin-card = Contact, AuthDialog, AccountPage, MotionLab | skin-btn = Toast, Button, AccountPage, MotionLab
+   skin-input = CartDrawer, Contact, AuthDialog | .drawer = CartDrawer | .popup = AuthDialog, ResearchPage
+   They read the skin tokens, so cart, sign in and account always match the page.
+   ============================================================================== */
 @layer components {
+  /* white card with border, rounded corners and soft shadow */
   .skin-card {
     background: var(--skin-surface);
     color: var(--skin-ink);
@@ -365,6 +286,7 @@
     border-radius: var(--skin-radius);
     box-shadow: var(--skin-shadow);
   }
+  /* main button: accent colour, pill shape, lifts a little on hover */
   .skin-btn {
     background: var(--skin-accent);
     color: var(--skin-accent-ink);
@@ -373,7 +295,9 @@
     transition: transform 0.15s, filter 0.15s;
   }
   .skin-btn:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+  /* variant of skin-btn in the "pop" (light red) colour */
   .skin-btn-pop { background: var(--skin-pop); color: var(--skin-pop-ink); }
+  /* text field: light fill, border turns blue with a soft glow on focus */
   .skin-input {
     background: var(--skin-input-bg);
     color: var(--skin-ink);
@@ -388,7 +312,7 @@
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--skin-link) 28%, transparent);
   }
 
-  /* cart slides in from the right, sign in pops up */
+  /* <dialog> animations: the cart slides in from the right, sign in pops up, the dim background fades in */
   dialog.drawer { border: 0; border-left: var(--skin-bw) solid var(--skin-edge); }
   dialog.drawer[open] { animation: drawer-in 0.3s ease-out; }
   dialog.popup[open] { animation: popup-in 0.25s ease-out; }
@@ -398,8 +322,57 @@
   @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 }
 
-/* The maths plane (MathPlane.jsx): minor lines every --u, numbered major lines every --M, both counted from the origin
-   which sits --ox from the left and --oy from the bottom. The two axes are drawn on top of the grid line they share. */
+
+/* ==============================================================================
+   8. PAGE: HOME and SHELF PAGES, small classes that replaced inline style props
+   Used by: Hero, AudienceHero, KidsBanner, QuoteBackground, Decor
+   JavaScript only passes the DATA (a number or a colour) as a CSS variable such as --x or --delay;
+   the rules that use it live here. These rules sit OUTSIDE any @layer on purpose: unlayered CSS beats
+   Tailwind utilities, so they win the same way the old inline styles did (for example over the
+   "animate-float" shorthand, which would otherwise reset animation-delay).
+   ============================================================================== */
+/* --- Fanned book covers (Hero.jsx on Home, AudienceHero.jsx on every shelf page) ---
+   JS sets per cover: --x (sideways offset), --r (tilt), --z (stacking order), --delay (animation delay).
+   --s (scale 0.5 to 1) is set by the breakpoint classes on the wrapper, so offsets shrink on small screens. */
+.fan-cover {
+  transform: translateX(calc(var(--x) * var(--s))) rotate(var(--r));
+  z-index: var(--z, auto);
+  animation-delay: var(--delay, 0s);
+}
+
+/* --- Three tilted covers in the Kids banner (KidsBanner.jsx) ---
+   JS sets --rot, the tilt of each cover (-7deg, 0deg, 7deg). */
+.kids-pick {
+  transform: rotate(var(--rot, 0deg));
+}
+
+/* --- Drifting scientist quotes behind the hero (QuoteBackground.jsx) ---
+   JS sets --secs, how long one full pass of the row takes. Each row has its own speed. */
+.quote-row {
+  animation-duration: var(--secs, 100s);
+}
+
+/* --- Twinkling star in the Adults decor (Decor.jsx) ---
+   JS sets --delay so the stars do not blink together. */
+.sparkle {
+  animation-delay: var(--delay, 0s);
+}
+
+/* --- One book spine on the Adults decor shelf (Decor.jsx) ---
+   JS sets --w (width in px) and --h (height in %) from a formula, so there are no 70 hand-typed spines. */
+.book-spine {
+  width: var(--w);
+  height: var(--h);
+}
+
+/* ==============================================================================
+   9. PAGE: MOTION LAB (#/motion-lab), maths plane, purchased book, hop guide
+   Used by: MathPlane.jsx, MotionLab.jsx, PurchasedBook.jsx (the purchased-book card is also used on the shelf pages)
+   ============================================================================== */
+/* --- The maths plane (MathPlane.jsx) ---
+   Minor lines every --u, numbered major lines every --M, both counted from the origin, which sits --ox from
+   the left and --oy from the bottom. The two axes are drawn on top of the grid line they share.
+   These four variables are set by MathPlane.jsx from its props, so they stay as inline CSS variables. */
 @layer components {
   .math-plane {
     --plane-minor: color-mix(in srgb, var(--skin-ink) 7%, transparent);
@@ -419,9 +392,25 @@
   }
   .math-plane-axis-x { left: 0; right: 0; bottom: calc(var(--oy) - 1px); height: 2px; }
   .math-plane-axis-y { top: 0; bottom: 0; left: var(--ox); width: 2px; }
+
+  /* Numbers and axis names. Each is placed from the origin; --i is which numbered line it labels (1, 2, 3 ...). */
+  .math-plane-tick-origin { left: calc(var(--ox) - 6px); bottom: calc(var(--oy) - 18px); }
+  .math-plane-tick-x { left: calc(var(--ox) + var(--i) * var(--M)); bottom: calc(var(--oy) - 20px); }
+  .math-plane-tick-y { left: 0; width: calc(var(--ox) - 8px); bottom: calc(var(--oy) + var(--i) * var(--M) - 8px); }
+  .math-plane-label-x { right: 12px; bottom: calc(var(--oy) + 6px); }
+  .math-plane-label-y { left: calc(var(--ox) + 8px); top: 8px; }
 }
 
-/* The purchased-book card (PurchasedBook.jsx). JavaScript only sets three variables and one transform each frame:
+/* --- Motion lab stage and hop guide (MotionLab.jsx) ---
+   These sit inside .math-plane, so they read its --ox / --oy. JS sets --hop, the current hop height in px. */
+@layer components {
+  .motion-stage { padding-left: calc(var(--ox) + 56px); padding-bottom: var(--oy); padding-top: 24px; }
+  .motion-hop-label { bottom: calc(var(--oy) + var(--hop) + 4px); }
+  .motion-hop-line { bottom: calc(var(--oy) + var(--hop)); }
+}
+
+/* --- The purchased-book card (PurchasedBook.jsx) ---
+   JavaScript only sets three variables and one transform each frame (this is animation, so it stays in JS):
    --bm-hue (colour wheel angle), --bm-a (strength of the colour wash), --bm-shadow (floor shadow size).
    Careful: no overflow other than visible on .bm-card, or the browser flattens the 3D flip. */
 @layer components {
@@ -473,13 +462,18 @@
   }
 }
 
-/* A few scroll-driven effects Tailwind has no utility for.
-   Browsers that don't support them just skip this block and show everything normally. */
+
+/* ==============================================================================
+   10. SCROLL EFFECTS: reveal on scroll, chat button fade
+   Used by: .reveal = FeatureBook, Watch, Shelf | .fab-away = ChatFab | .contact-timeline = Contact
+   Tailwind has no utility for these. Browsers without support skip the whole block and show everything normally.
+   ============================================================================== */
 @supports (animation-timeline: view()) {
   @keyframes rise {
     from { opacity: 0; transform: translateY(28px); }
     to { opacity: 1; transform: none; }
   }
+  /* element fades and slides up as it enters the screen */
   .reveal {
     animation: rise linear both;
     animation-timeline: view();
@@ -499,8 +493,73 @@
   }
 }
 
+
+/* ==============================================================================
+   11. PAGE: RESEARCH & BOOK (the scientists shelf)
+   Used by: research/ResearchPage, cards, bits, SearchModal, OrderModal (.rb) and research/Modal (.rb-dialog)
+   .rb is the page wrapper; .rb-dialog is the wrapper of its pop-up dialogs (portalled outside the page).
+   ============================================================================== */
+/* Strong, visible focus ring on every interactive element of the page and its dialogs. */
+.rb :focus-visible,
+.rb-dialog :focus-visible {
+  outline: 4px solid var(--color-rb-blue);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px #fff;
+}
+/* .rb-lazy: cards below the fold are not laid out until they get close to the screen (faster first paint). */
+.rb-lazy {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+/* .rb-press: hard offset "sticker" shadow that collapses when pressed. */
+.rb-press {
+  transition: transform 80ms, box-shadow 80ms;
+}
+.rb-press:active {
+  transform: translate(4px, 4px);
+  box-shadow: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rb-press {
+    transition: none;
+  }
+}
+
+/* Rounded, friendly corners for everything with a border on this page (cards, chips, inputs, dialogs).
+   Rules go from general to specific: all bordered things 16px, then cards 22px, then buttons/links pill-shaped,
+   then form fields 16px again, then the dialog panel (square on phones, 28px from 768px up). */
+.rb [class*="border-2"],
+.rb-dialog [class*="border-2"] { border-radius: 16px; }
+.rb article[class*="border-2"],
+.rb section[class*="border-2"],
+.rb-dialog article[class*="border-2"] { overflow: hidden; border-radius: 22px; }
+.rb button[class*="border-2"],
+.rb a[class*="border-2"],
+.rb-dialog button[class*="border-2"],
+.rb-dialog a[class*="border-2"],
+.rb-press { border-radius: 9999px; }
+.rb input[class*="border-2"],
+.rb textarea[class*="border-2"],
+.rb-dialog input[class*="border-2"],
+.rb-dialog textarea[class*="border-2"],
+.rb-dialog ul[class*="border-2"],
+.rb-dialog li[class*="border-2"] { border-radius: 16px; }
+.rb-dialog [role="dialog"] { border-radius: 0; }
+@media (min-width: 768px) { .rb-dialog [role="dialog"] { border-radius: 28px; } }
+
+/* ==============================================================================
+   12. ACCESSIBILITY AND PAGE STATE
+   Used by: every page
+   ============================================================================== */
+/* People who asked their device for less motion get no smooth scrolling and no scroll or dialog animations. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .reveal, .fab-away { animation: none; }
   dialog.drawer[open], dialog.popup[open], dialog[open]::backdrop { animation: none; }
+}
+
+/* While a Research & Book dialog is open the page behind it must not scroll.
+   research/Modal.jsx adds and removes this class on <body> (it used to set an inline style). */
+body.modal-open {
+  overflow: hidden;
 }
