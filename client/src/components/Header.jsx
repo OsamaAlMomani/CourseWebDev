@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react'
 import { useCatalog } from '../context/CatalogContext'
 import { useShop } from '../context/ShopContext'
 import { authClient } from '../lib/authClient'
-import { themes } from '../data/themes'
+import { themes, voices } from '../data/themes'
 import Container from './Container'
 import Button from './Button'
 import { goToContact } from '../lib/contactLink'
+import useCategory, { pickCategory, isScrollLocked } from '../lib/useCategory'
+import SlidingTabs from './SlidingTabs'
 
 export default function Header({ route, skin, world }) {
-  const { groups } = useCatalog()
+  const { groups, books } = useCatalog()
   const { user, openAuth, setCartOpen, cartCount, notify } = useShop()
   // is the phone menu open? That's the only thing the header needs to remember
   const [open, setOpen] = useState(false)
@@ -22,11 +24,62 @@ export default function Header({ route, skin, world }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
+  // smart view: the subtab row tucks away while you scroll down and returns as soon as you scroll up
+  const [compact, setCompact] = useState(false)
+  useEffect(() => {
+    let last = window.scrollY
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        ticking = false
+        const y = window.scrollY
+        const nearBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 80
+        if (y < 120) {
+          setCompact(false)
+          last = y
+        } else if (isScrollLocked() || nearBottom) {
+          last = y // a glide we started ourselves, or the page end: don't react
+        } else if (y - last > 8) {
+          setCompact(true)
+          last = y
+        } else if (last - y > 8) {
+          setCompact(false)
+          last = y
+        }
+      })
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   // the header takes on the colours of the page you're on
   const theme = themes[route] ?? themes[skin] ?? themes.home
   const kidsWorld = world === 'kids'
-  // the nav only shows the half you are in, with one link over to the other half
-  const navGroups = groups.filter((g) => g.world === world)
+  // the tab bar lists EVERY reader group (Kids first), plus a way back to the home page.
+  const ordered = [...groups.filter((g) => g.world === 'kids'), ...groups.filter((g) => g.world !== 'kids')]
+  const tabs = [
+    { id: 'home', label: 'All shelves', icon: '🏠', href: '#/' },
+    ...ordered.map((g) => ({ id: g.id, label: g.title, icon: (voices[g.id] ?? voices.home).icon, href: `#/${g.id}` })),
+  ]
+  const activeGroup = groups.find((g) => g.id === route)
+  const activeTab = route === '' ? 'home' : activeGroup?.id ?? null // account page etc.: no highlight
+
+  // subtabs = the sections of the shelf you are on. Empty sections are left out, and each one shows how many books it has.
+  // (The scientists page is the Research & Book portal with its own menus, so it has no subtabs.)
+  const picked = useCategory()
+  const sections = activeGroup && activeGroup.id !== 'scientists' ? activeGroup.categories : []
+  const subTabs = sections.length
+    ? [
+        { id: 'all', label: 'Everything', count: books.filter((b) => b.group === activeGroup.id).length },
+        ...sections
+          .map((c) => ({ id: c.id, label: c.label, icon: c.icon, count: books.filter((b) => b.group === activeGroup.id && b.category === c.id).length }))
+          .filter((c) => c.count > 0),
+      ]
+    : []
+  const showSub = subTabs.length > 2
+  const activeSub = subTabs.some((c) => c.id === picked) ? picked : 'all'
 
   return (
     <header className={`sticky top-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-colors ${theme.header}`}>
@@ -42,35 +95,6 @@ export default function Header({ route, skin, world }) {
           aria-label="Main"
           className={`${open ? 'flex' : 'hidden'} fixed inset-x-0 top-[calc(64px_+_env(safe-area-inset-top,0px))] max-h-[calc(100dvh_-_64px_-_env(safe-area-inset-top,0px))] flex-col overflow-y-auto border-t border-current/10 px-[var(--gutter)] pt-2 pb-4 md:static md:flex md:max-h-none md:flex-row md:gap-6 md:overflow-visible md:border-0 md:bg-transparent md:p-0 ${theme.navBg}`}
         >
-          {navGroups.map((g) => (
-            <a
-              key={g.id}
-              href={`#/${g.id}`}
-              aria-current={route === g.id ? 'page' : undefined}
-              onClick={() => setOpen(false)}
-              className={`flex min-h-11 items-center text-[1.05rem] font-medium underline-offset-8 aria-[current=page]:font-bold aria-[current=page]:underline aria-[current=page]:decoration-2 md:min-h-0 md:text-base ${theme.navLink}`}
-            >
-              {kidsWorld ? 'Kids Corner' : g.title}
-            </a>
-          ))}
-          {/* the way over to the other half of the shop */}
-          {kidsWorld ? (
-            <a
-              href="#/"
-              onClick={() => setOpen(false)}
-              className={`flex min-h-11 items-center text-[1.05rem] font-bold underline underline-offset-4 md:min-h-0 md:text-base ${theme.navLink}`}
-            >
-              Main shop →
-            </a>
-          ) : (
-            <a
-              href="#/kids"
-              onClick={() => setOpen(false)}
-              className="btn skin-btn skin-btn-pop my-1 min-h-11 self-start px-4 text-[1.05rem] md:my-0 md:min-h-9 md:text-base"
-            >
-              🧸 Kids Corner
-            </a>
-          )}
           {/* account links: what you see depends on whether the server says you are signed in */}
           {user ? (
             <>
@@ -152,6 +176,35 @@ export default function Header({ route, skin, world }) {
           </button>
         </div>
       </Container>
+
+      {/* the tab bar: every shelf, with a highlight that slides to the one you are on */}
+      <div className="border-t border-line/70">
+        <Container>
+          <SlidingTabs label="Shelves" items={tabs} activeId={activeTab} tone="blue" onSelect={() => setOpen(false)} />
+        </Container>
+
+        {/* subtabs: the sections of the current shelf. They filter the books and share the choice with the shelf below */}
+        {showSub && (
+          <div
+            className={`grid transition-[grid-template-rows,opacity,visibility] duration-200 motion-reduce:transition-none ${
+              compact ? 'invisible grid-rows-[0fr] opacity-0' : 'visible grid-rows-[1fr] opacity-100'
+            }`}
+          >
+            <div className="min-h-0 overflow-hidden">
+              <Container className="pb-1.5">
+                <SlidingTabs
+                  label={`${activeGroup.title} sections`}
+                  items={subTabs}
+                  activeId={activeSub}
+                  tone="coral"
+                  size="sm"
+                  onSelect={(item) => pickCategory(item.id)}
+                />
+              </Container>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   )
 }

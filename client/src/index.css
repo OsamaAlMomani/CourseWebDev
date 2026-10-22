@@ -10,7 +10,7 @@
    - New shared classes (section 8b): .t-display .t-section .t-title .t-card-title .t-lede .t-body .t-meta
      .t-eyebrow .btn .skin-btn-soft .chip .badge. Every page uses them, so fonts, sizes and colours match.
    - Research & Book no longer has its own look: its unlayered override block and .rb-press were removed.
-   - --header-h is 65px (the real header height) so sticky bars and anchor jumps line up.
+   - --header-h is 118px (header row + audience tab bar) so sticky bars and anchor jumps line up.
 
    PREVIOUS REBUILD NOTES
    - Fixed WCAG 1.4.11 failures on input border and input focus ring.
@@ -184,7 +184,7 @@
     --gutter-end:   max(var(--gutter-base), env(safe-area-inset-right, 0px));
     --gutter: var(--gutter-start); /* legacy alias */
 
-    --header-h: 65px;
+    --header-h: 118px; /* header row 64px + audience tab bar 53px + borders; the section subtabs row is extra and tucks away on scroll */
   }
 
   html {
