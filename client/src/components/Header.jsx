@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useCatalog } from '../context/CatalogContext'
 import { useShop } from '../context/ShopContext'
 import { authClient } from '../lib/authClient'
@@ -6,16 +6,23 @@ import { themes, voices } from '../data/themes'
 import Container from './Container'
 import Button from './Button'
 import { goToContact } from '../lib/contactLink'
-import useCategory, { pickCategory, isScrollLocked } from '../lib/useCategory'
+import useCategory, { pickCategory } from '../lib/useCategory'
 import SlidingTabs from './SlidingTabs'
+import { useHeaderScroll } from '../lib/useHeaderScroll'
+import { useHeaderHeight } from '../lib/useHeaderHeight'
 
 export default function Header({ route, skin, world }) {
   const { groups, books } = useCatalog()
   const { user, openAuth, setCartOpen, cartCount, notify } = useShop()
-  // is the phone menu open? That's the only thing the header needs to remember
   const [open, setOpen] = useState(false)
+  const headerRef = useRef(null)
 
-  // pressing Escape closes the menu. The listener is removed again when the header goes away
+  // scroll drives data-tuck on the header DOM node (no re-render)
+  useHeaderScroll(headerRef)
+  // measure the header once, write --header-h to <html>
+  useHeaderHeight(headerRef)
+
+  // Escape closes the mobile menu
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') setOpen(false)
@@ -24,84 +31,91 @@ export default function Header({ route, skin, world }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  // smart view: the subtab row tucks away while you scroll down and returns as soon as you scroll up
-  const [compact, setCompact] = useState(false)
-  useEffect(() => {
-    let last = window.scrollY
-    let ticking = false
-    const onScroll = () => {
-      if (ticking) return
-      ticking = true
-      requestAnimationFrame(() => {
-        ticking = false
-        const y = window.scrollY
-        const nearBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 80
-        if (y < 120) {
-          setCompact(false)
-          last = y
-        } else if (isScrollLocked() || nearBottom) {
-          last = y // a glide we started ourselves, or the page end: don't react
-        } else if (y - last > 8) {
-          setCompact(true)
-          last = y
-        } else if (last - y > 8) {
-          setCompact(false)
-          last = y
-        }
-      })
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // the header takes on the colours of the page you're on
   const theme = themes[route] ?? themes[skin] ?? themes.home
   const kidsWorld = world === 'kids'
-  // the tab bar lists EVERY reader group (Kids first), plus a way back to the home page.
-  const ordered = [...groups.filter((g) => g.world === 'kids'), ...groups.filter((g) => g.world !== 'kids')]
-  const tabs = [
-    { id: 'home', label: 'All shelves', icon: '🏠', href: '#/' },
-    ...ordered.map((g) => ({ id: g.id, label: g.title, icon: (voices[g.id] ?? voices.home).icon, href: `#/${g.id}` })),
-  ]
-  const activeGroup = groups.find((g) => g.id === route)
-  const activeTab = route === '' ? 'home' : activeGroup?.id ?? null // account page etc.: no highlight
 
-  // subtabs = the sections of the shelf you are on. Empty sections are left out, and each one shows how many books it has.
-  // (The scientists page is the Research & Book portal with its own menus, so it has no subtabs.)
+  const ordered = useMemo(() => {
+    const kids = []
+    const rest = []
+    for (const g of groups) (g.world === 'kids' ? kids : rest).push(g)
+    return [...kids, ...rest]
+  }, [groups])
+
+  const tabs = useMemo(
+    () => [
+      { id: 'home', label: 'All shelves', icon: '🏠', href: '#/' },
+      ...ordered.map((g) => ({
+        id: g.id,
+        label: g.title,
+        icon: (voices[g.id] ?? voices.home).icon,
+        href: `#/${g.id}`,
+      })),
+    ],
+    [ordered],
+  )
+
+  const activeGroup = useMemo(
+    () => groups.find((g) => g.id === route) ?? null,
+    [groups, route],
+  )
+  const activeTab = route === '' ? 'home' : activeGroup?.id ?? null
+
+  // one pass over books for every section count (was N+1 filters per render)
+  const subTabs = useMemo(() => {
+    if (!activeGroup || activeGroup.id === 'scientists') return []
+    const categories = activeGroup.categories
+    if (!categories?.length) return []
+
+    const counts = new Map()
+    let total = 0
+    for (const b of books) {
+      if (b.group !== activeGroup.id) continue
+      total++
+      if (b.category) counts.set(b.category, (counts.get(b.category) ?? 0) + 1)
+    }
+
+    const result = [{ id: 'all', label: 'Everything', count: total }]
+    for (const c of categories) {
+      const count = counts.get(c.id) ?? 0
+      if (count > 0) result.push({ id: c.id, label: c.label, icon: c.icon, count })
+    }
+    return result
+  }, [activeGroup, books])
+
   const picked = useCategory()
-  const sections = activeGroup && activeGroup.id !== 'scientists' ? activeGroup.categories : []
-  const subTabs = sections.length
-    ? [
-        { id: 'all', label: 'Everything', count: books.filter((b) => b.group === activeGroup.id).length },
-        ...sections
-          .map((c) => ({ id: c.id, label: c.label, icon: c.icon, count: books.filter((b) => b.group === activeGroup.id && b.category === c.id).length }))
-          .filter((c) => c.count > 0),
-      ]
-    : []
   const showSub = subTabs.length > 2
   const activeSub = subTabs.some((c) => c.id === picked) ? picked : 'all'
 
+  const closeMenu = useCallback(() => setOpen(false), [])
+  const handleSubSelect = useCallback((item) => pickCategory(item.id), [])
+
   return (
-    <header className={`sticky top-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-colors ${theme.header}`}>
+    <header
+      ref={headerRef}
+      data-tuck="none"
+      className={`site-header sticky top-0 z-50 pt-[env(safe-area-inset-top,0px)] transition-colors ${theme.header}`}
+    >
       <Container className="flex min-h-16 items-center justify-between gap-2.5">
         <a href="#/" className="text-[1.15rem] font-extrabold tracking-[-0.02em] min-[360px]:text-[1.4rem] font-display">
           Global<span className={theme.logoAccent}>Books</span>
-          {kidsWorld && <span className="ml-1.5 rounded-full bg-sun px-2 py-0.5 align-middle text-[0.65em] font-extrabold text-ink">Kids</span>}
+          {kidsWorld && (
+            <span className="ml-1.5 rounded-full bg-sun px-2 py-0.5 align-middle text-[0.65em] font-extrabold text-ink">
+              Kids
+            </span>
+          )}
         </a>
 
-        {/* phones: dropdown that shows when open is true. md and up: always a row */}
         <nav
           id="nav"
           aria-label="Main"
           className={`${open ? 'flex' : 'hidden'} fixed inset-x-0 top-[calc(64px_+_env(safe-area-inset-top,0px))] max-h-[calc(100dvh_-_64px_-_env(safe-area-inset-top,0px))] flex-col overflow-y-auto border-t border-current/10 px-[var(--gutter)] pt-2 pb-4 md:static md:flex md:max-h-none md:flex-row md:gap-6 md:overflow-visible md:border-0 md:bg-transparent md:p-0 ${theme.navBg}`}
         >
-          {/* account links: what you see depends on whether the server says you are signed in */}
           {user ? (
             <>
               <a
                 href="#/account"
                 aria-current={route === 'account' ? 'page' : undefined}
-                onClick={() => setOpen(false)}
+                onClick={closeMenu}
                 className={`flex min-h-11 items-center text-[1.05rem] font-medium underline-offset-8 aria-[current=page]:font-bold aria-[current=page]:underline md:min-h-0 md:text-base ${theme.navLink}`}
               >
                 My account
@@ -133,7 +147,7 @@ export default function Header({ route, skin, world }) {
           )}
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={closeMenu}
             className={`flex min-h-11 items-center text-[1.05rem] font-medium md:hidden ${theme.closeLink}`}
           >
             Close menu
@@ -153,7 +167,6 @@ export default function Header({ route, skin, world }) {
               <circle cx="17" cy="20" r="1.2" />
             </svg>
             {cartCount > 0 && (
-              // key={cartCount}: React makes a fresh badge each time the number changes, so the bump plays again
               <span key={cartCount} className="absolute top-0.5 right-0 grid min-w-5 animate-bump place-items-center rounded-full bg-sun px-1 text-xs font-extrabold text-ink motion-reduce:animate-none">
                 {cartCount}
               </span>
@@ -177,20 +190,25 @@ export default function Header({ route, skin, world }) {
         </div>
       </Container>
 
-      {/* the tab bar: every shelf, with a highlight that slides to the one you are on */}
+      {/* Both tab rows live inside one bordered wrapper, as before. */}
       <div className="border-t border-line/70">
-        <Container>
-          <SlidingTabs label="Shelves" items={tabs} activeId={activeTab} tone="blue" onSelect={() => setOpen(false)} />
-        </Container>
+        <div className="site-header-row" data-row="tabs">
+          <div>
+            <Container>
+              <SlidingTabs
+                label="Shelves"
+                items={tabs}
+                activeId={activeTab}
+                tone="blue"
+                onSelect={closeMenu}
+              />
+            </Container>
+          </div>
+        </div>
 
-        {/* subtabs: the sections of the current shelf. They filter the books and share the choice with the shelf below */}
         {showSub && (
-          <div
-            className={`grid transition-[grid-template-rows,opacity,visibility] duration-200 motion-reduce:transition-none ${
-              compact ? 'invisible grid-rows-[0fr] opacity-0' : 'visible grid-rows-[1fr] opacity-100'
-            }`}
-          >
-            <div className="min-h-0 overflow-hidden">
+          <div className="site-header-row" data-row="subtabs">
+            <div>
               <Container className="pb-1.5">
                 <SlidingTabs
                   label={`${activeGroup.title} sections`}
@@ -198,7 +216,7 @@ export default function Header({ route, skin, world }) {
                   activeId={activeSub}
                   tone="coral"
                   size="sm"
-                  onSelect={(item) => pickCategory(item.id)}
+                  onSelect={handleSubSelect}
                 />
               </Container>
             </div>

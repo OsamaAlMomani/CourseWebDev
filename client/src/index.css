@@ -1,198 +1,178 @@
 @import "tailwindcss";
 
 /* ==============================================================================
-   GLOBALBOOKS: index.css  (the ONLY stylesheet of the project)
-   ==============================================================================
-   THIS REVISION (animations + one look for every page)
-   - Keyframes are now top-level (always in the build) instead of inside @theme.
-   - Plain-CSS helpers (.fan-cover, .kids-pick ...) moved into @layer components so Tailwind utilities
-     such as motion-reduce:animate-none can still override them.
-   - New shared classes (section 8b): .t-display .t-section .t-title .t-card-title .t-lede .t-body .t-meta
-     .t-eyebrow .btn .skin-btn-soft .chip .badge. Every page uses them, so fonts, sizes and colours match.
-   - Research & Book no longer has its own look: its unlayered override block and .rb-press were removed.
-   - --header-h is 118px (header row + audience tab bar) so sticky bars and anchor jumps line up.
-
-   PREVIOUS REBUILD NOTES
-   - Fixed WCAG 1.4.11 failures on input border and input focus ring.
-   - Fixed drawer slide-in animation to actually originate off the right edge.
-   - Replaced filter: brightness() on .skin-btn:hover/active with background-
-     color: color-mix() to avoid stacking-context / blurry-text regressions.
-   - Added explicit disabled styles, ::backdrop darkness, overscroll contain.
-   - Guarded overflow: clip on the research page behind @supports so Firefox
-     and Safari fall back to a non-clipping state (no more hidden outlines).
-   - Added prefers-contrast: more enhancement block.
-   - Kept every public class name (.skin-card, .fan-cover, ...) and
-     every design token untouched so components need no changes.
-
-   TESTING CHEATSHEET (see comments per rule for details)
-   - Contrast:    browser DevTools → Inspect → "Contrast ratio" badge.
-   - Motion:      DevTools → Rendering → Emulate prefers-reduced-motion.
-   - High-cnt:    DevTools → Rendering → Emulate prefers-contrast.
-   - Keyboard:    Tab through a form / dialog and confirm the ring is visible
-                  on every focusable element.
-   - Perf:        DevTools → Performance, record hover on a .skin-btn and a
-                  card; expect no filter/box-shadow paints on hover.
-   - Cross-b:     Test the drawer and the hero animations in Firefox + Safari.
-
-   TABLE OF CONTENTS
-     1. Design tokens            (every page)
-     2. Skin tokens              (every page)
-     3. Small animations         (every page)
-     4. Custom variants          (Home hero)
-     5. Base styles              (every page)
-     6. Skin values              (every page)
-     7. Shared components        (Cart drawer, Sign in, Account, Contact, Toast)
-     8. Page: Home               (fanned covers, kids picks, decor)
-     8b. One look                (type scale, buttons, chips, badges)
-     9. Page: Motion lab         (maths plane, purchased book, hop guide)
-    10. Scroll effects           (reveal on scroll, chat button fade)
-    11. Page: Research & Book    (.rb) and its dialogs (.rb-dialog)
-    12. Accessibility            (reduced motion, high contrast, page lock)
+   GLOBALBOOKS — rebuilt for speed: no backdrop-filter, no filter:blur,
+   no content-visibility, no contain. Backgrounds are radial-gradients only.
+   Everything that animates uses transform / opacity.
    ============================================================================== */
 
-/* ==============================================================================
-   1. DESIGN TOKENS
-   ============================================================================== */
+/* ---- 1. DESIGN TOKENS ------------------------------------------------------ */
 @theme {
-  /* main palette */
-  --color-ink: #12263f;
-  --color-ink-soft: #dcefff;
-  --color-paper: #f2f9ff;
-  --color-blue: #0f6dbb;
-  --color-coral: #ffb4ae;
-  --color-sun: #cfe8ff;
-  --color-mint: #bdeedb;
-  --color-muted: #4a6580;
-  --color-line: #cfe6fa;            /* keep both for older callers */
+  --color-ink:      #1a2e4a;
+  --color-ink-soft: #e3f2ff;
+  --color-paper:    #f5faff;
+  --color-blue:     #3b8ed6;
+  --color-coral:    #ff9d94;
+  --color-sun:      #ffd782;
+  --color-mint:     #9be5c8;
+  --color-lavender: #c4b5fd;
+  --color-muted:    #5a7490;
+  --color-line:     #d6e6f5;
 
-
-  /* fonts: the whole site uses TWO families. Bricolage Grotesque for headings, DM Sans for everything else. */
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; /* only the Motion lab uses this */
+  --font-body:    "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* animation shortcuts (the keyframes themselves are defined below, outside @theme, so they are ALWAYS in the build) */
-  --animate-float: float 6s ease-in-out infinite alternate;
-  --animate-marquee-slow: marquee 80s linear infinite;
-  --animate-sway: sway 7s ease-in-out infinite alternate;
-  --animate-bob: bob 4s ease-in-out infinite alternate;
-  --animate-twinkle: twinkle 2.5s ease-in-out infinite alternate;
-  --animate-bump: bump 0.45s ease-out;
-  --animate-pop: pop 0.4s ease-out;
-  --animate-rise-in: rise-in 0.35s ease-out;
-  --animate-page: page-in 0.5s ease-out;
-  --animate-hop: hop 0.9s ease-in-out infinite;
+  --motion-base:  4s;
+  --ease-smooth:  cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-soft:  cubic-bezier(0.64, 0, 0.78, 0);
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-float:        float 6s var(--ease-smooth) infinite alternate both;
+  --animate-marquee-slow: marquee 80s linear infinite both;
+  --animate-sway:         sway 7s var(--ease-smooth) infinite alternate both;
+  --animate-bob:          bob 4s var(--ease-smooth) infinite alternate both;
+  --animate-twinkle:      twinkle 2.5s var(--ease-smooth) infinite alternate both;
+  --animate-bump:         bump 0.45s var(--ease-spring) both;
+  --animate-pop:          pop 0.4s var(--ease-spring) both;
+  --animate-rise-in:      rise-in 0.35s var(--ease-out-soft) both;
+  --animate-page:         page-in 0.5s var(--ease-out-soft) both;
+  --animate-hop:          hop 0.9s var(--ease-smooth) infinite both;
 }
 
-/* FIX: these used to live inside @theme. Tailwind only writes a theme keyframe into the CSS when it sees the matching
-   animate-* class in a file, so plain-CSS rules (.reveal ...) that name a keyframe directly could end up
-   pointing at an animation that did not exist. Keyframes written at the top level are always kept. */
+/* ---- Keyframes: transform/opacity only ------------------------------------ */
 @keyframes float {
-  from {
-    /* same two functions as .fan-cover's own transform, so the browser interpolates them one by one */
-    transform:
-      translate(calc(var(--x, 0px) * var(--s, 1)), 0px)
-      rotate(var(--r, 0deg));
-  }
-  to {
-    transform:
-      translate(calc(var(--x, 0px) * var(--s, 1)), -16px)
-      rotate(calc(var(--r, 0deg) + 3deg));
-  }
+  from { transform: translate3d(calc(var(--x, 0px) * var(--s, 1)), 0, 0) rotate(var(--r, 0deg)); }
+  to   { transform: translate3d(calc(var(--x, 0px) * var(--s, 1)), calc(var(--y, -16px) * var(--s, 1)), 0) rotate(calc(var(--r, 0deg) + var(--spin, 3deg))); }
 }
-@keyframes marquee     { to { transform: translateX(-50%); } }
 @keyframes bob {
-  from { transform: translateY(0) rotate(var(--tilt, 0deg)); }
-  to   { transform: translateY(-14px) rotate(calc(var(--tilt, 0deg) + 4deg)); }
-}
-@keyframes twinkle {
-  from { opacity: 0.15; transform: scale(0.7); }
-  to   { opacity: 1;    transform: scale(1.1); }
+  from { transform: translate3d(0, 0, 0) rotate(var(--tilt, 0deg)); }
+  to   { transform: translate3d(0, calc(var(--y, -14px) * var(--s, 1)), 0) rotate(calc(var(--tilt, 0deg) + var(--spin, 4deg))); }
 }
 @keyframes sway {
-  from { transform: rotate(-3deg); }
-  to   { transform: rotate(3deg) translateY(-6px); }
+  from { transform: translate3d(0, 0, 0) rotate(calc(var(--tilt, -3deg))); }
+  to   { transform: translate3d(0, calc(var(--y, -6px) * var(--s, 1)), 0) rotate(calc(var(--tilt, -3deg) * -1)); }
 }
-@keyframes bump {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.6) rotate(-8deg); }
-  100% { transform: scale(1); }
-}
-@keyframes pop {
-  0%   { transform: scale(0.85); }
-  55%  { transform: scale(1.18); }
-  100% { transform: scale(1); }
-}
-@keyframes rise-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: none; }
-}
-@keyframes page-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: none; }
-}
-@keyframes hop {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-16px); }
-}
+@keyframes marquee  { from { transform: translate3d(0,0,0); } to { transform: translate3d(-50%,0,0); } }
+@keyframes twinkle  { from { opacity: .15; transform: scale3d(.7,.7,1); } to { opacity: 1; transform: scale3d(1.1,1.1,1); } }
+@keyframes bump     { 0% { transform: scale3d(1,1,1) rotate(0); } 40% { transform: scale3d(1.6,1.6,1) rotate(-8deg); } 100% { transform: scale3d(1,1,1) rotate(0); } }
+@keyframes pop      { 0% { transform: scale3d(.85,.85,1); } 55% { transform: scale3d(1.18,1.18,1); } 100% { transform: scale3d(1,1,1); } }
+@keyframes rise-in  { from { opacity: 0; transform: translate3d(0,14px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
+@keyframes page-in  { from { opacity: 0; transform: translate3d(0,10px,0); } to { opacity: 1; transform: translate3d(0,0,0); } }
+@keyframes hop      { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-16px,0); } }
 
-/* ==============================================================================
-   2. SKIN TOKENS
-   ============================================================================== */
+/* ---- 2. SKIN TOKENS ------------------------------------------------------- */
 @theme inline {
-  --color-skin-bg: var(--skin-bg);
-  --color-skin-surface: var(--skin-surface);
-  --color-skin-ink: var(--skin-ink);
-  --color-skin-muted: var(--skin-muted);
-  --color-skin-line: var(--skin-line);
-  --color-skin-edge: var(--skin-edge);
-  --color-skin-accent: var(--skin-accent);
-  --color-skin-pop: var(--skin-pop);
-  --color-skin-pop-ink: var(--skin-pop-ink);
-  --color-skin-link: var(--skin-link);
-  --color-skin-danger: var(--skin-danger);
-  --color-skin-deep: var(--skin-deep);
+  --color-skin-bg:       var(--skin-bg);
+  --color-skin-surface:  var(--skin-surface);
+  --color-skin-ink:      var(--skin-ink);
+  --color-skin-muted:    var(--skin-muted);
+  --color-skin-line:     var(--skin-line);
+  --color-skin-edge:     var(--skin-edge);
+  --color-skin-accent:   var(--skin-accent);
+  --color-skin-pop:      var(--skin-pop);
+  --color-skin-pop-ink:  var(--skin-pop-ink);
+  --color-skin-link:     var(--skin-link);
+  --color-skin-danger:   var(--skin-danger);
+  --color-skin-deep:     var(--skin-deep);
   --color-skin-deep-ink: var(--skin-deep-ink);
   --color-skin-deep-muted: var(--skin-deep-muted);
-  --color-skin-deep-soft: var(--skin-deep-soft);
-  --color-skin-deep-line: var(--skin-deep-line);
-  --color-skin-deep-pop: var(--skin-deep-pop);
-  --color-skin-foot: var(--skin-foot);
-  --color-skin-foot-ink: var(--skin-foot-ink);
-  --color-skin-foot-pop: var(--skin-foot-pop);
-  --font-skin: var(--skin-font);
+  --color-skin-deep-soft:  var(--skin-deep-soft);
+  --color-skin-deep-line:  var(--skin-deep-line);
+  --color-skin-deep-pop:   var(--skin-deep-pop);
+  --color-skin-foot:       var(--skin-foot);
+  --color-skin-foot-ink:   var(--skin-foot-ink);
+  --color-skin-foot-pop:   var(--skin-foot-pop);
+  --font-skin:   var(--skin-font);
   --radius-skin: var(--skin-radius);
   --shadow-skin: var(--skin-shadow);
 }
 
-/* ==============================================================================
-   3. SMALL ANIMATIONS: now defined once, in section 1 (variables + keyframes)
-   ============================================================================== */
+:root {
+  --skin-bg:      #f5faff;
+  --skin-surface: #ffffff;
+  --skin-line:    #d6e6f5;
+  --skin-edge:    #e5eff9;
 
-/* ==============================================================================
-   4. CUSTOM VARIANTS
-   ============================================================================== */
+  --skin-ink:     #1a2e4a;
+  --skin-muted:   #5a7490;
+
+  --skin-accent:     #3b8ed6;
+  --skin-accent-ink: #ffffff;
+  --skin-pop:        #ffb3a7;
+  --skin-pop-ink:    #7c3a34;
+  --skin-link:       #2563a8;
+  --skin-danger:     #c94a52;
+
+  --skin-deep:        #eaf4ff;
+  --skin-deep-ink:    #1a2e4a;
+  --skin-deep-muted:  #5a7490;
+  --skin-deep-soft:   rgba(59,142,214,0.06);
+  --skin-deep-line:   rgba(59,142,214,0.14);
+  --skin-deep-pop:    #3b8ed6;
+
+  --skin-foot:     #e8f2fc;
+  --skin-foot-ink: #33506b;
+  --skin-foot-pop: #3b8ed6;
+
+  --skin-font:   var(--font-display);
+  --skin-radius: 24px;
+  --skin-bw:     1px;
+  --skin-shadow:
+    0 1px 2px rgba(26,46,74,0.04),
+    0 10px 26px -14px rgba(26,46,74,0.12);
+
+  --skin-btn-radius: 9999px;
+  --skin-btn-shadow: 0 6px 18px -6px rgba(59,142,214,0.42);
+  --skin-btn-pop-shadow: 0 6px 18px -6px rgba(255,157,148,0.50);
+
+  --skin-input-bg:     #f8fbff;
+  --skin-input-radius: 18px;
+  --skin-input-border: #7d9db8;
+  --skin-focus:        #2f74a8;
+  --skin-backdrop:     rgba(26,46,74,0.38);
+
+  --skin-disabled-bg:  #e4edf6;
+  --skin-disabled-ink: #8a9fb3;
+
+  --skin-strength-1: #d1575d;
+  --skin-strength-2: #d1575d;
+  --skin-strength-3: #d99a2b;
+  --skin-strength-4: #3a9a68;
+
+  /* Account stage palette */
+  --stage-ivory:   #fdf8f3;
+  --stage-paper:   #f3eee8;
+  --stage-apricot: #ffe2cc;
+  --stage-rose:    #ffd6d6;
+  --stage-glass:   #cce9ff;
+  --stage-lilac:   #e2d4ff;
+  --stage-sun:     #ffeab8;
+  --stage-ink:     #1a2e4a;
+
+  --soft-ease:     cubic-bezier(0.22, 0.61, 0.36, 1);
+  --soft-ease-out: cubic-bezier(0.32, 0.72, 0, 1);
+  --soft-ring:     rgba(47,116,168,0.20);
+}
+
+/* ---- 3. CUSTOM VARIANTS --------------------------------------------------- */
 @custom-variant short-landscape (@media (orientation: landscape) and (max-height: 520px));
 
-/* ==============================================================================
-   5. BASE STYLES
-   ============================================================================== */
+/* ---- 4. BASE -------------------------------------------------------------- */
 @layer base {
   :root {
     --gutter-base:  max(1rem, 4vw);
     --gutter-start: max(var(--gutter-base), env(safe-area-inset-left, 0px));
     --gutter-end:   max(var(--gutter-base), env(safe-area-inset-right, 0px));
-    --gutter: var(--gutter-start); /* legacy alias */
-
-    --header-h: 118px; /* header row 64px + audience tab bar 53px + borders; the section subtabs row is extra and tucks away on scroll */
+    --gutter: var(--gutter-start);
+    --header-h: 118px;
   }
 
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: calc(env(safe-area-inset-top, 0px) + var(--header-h));
+    scroll-padding-top: var(--header-h);
     -webkit-text-size-adjust: 100%;
-    /* FIX: apply overflow-x at html so body→viewport propagation cannot
-       accidentally eat vertical scrolling on older engines. */
     overflow-x: clip;
   }
 
@@ -212,77 +192,22 @@
     outline: 3px solid var(--skin-focus);
     outline-offset: 2px;
   }
-}
 
-/* ==============================================================================
-   6. SKIN VALUES
-   ============================================================================== */
-@layer base {
-  :root, [data-skin] {
-    --skin-bg: #f2f9ff;
-    --skin-surface: #ffffff;
-    --skin-ink: #12263f;
-    --skin-muted: #4a6580;
-    --skin-line: #cfe6fa;
-    --skin-edge: #cfe6fa;   /* decorative card border, shadow provides contrast */
-    --skin-accent: #0f6dbb;
-    --skin-accent-ink: #ffffff;
-    --skin-pop: #ffb4ae;
-    --skin-pop-ink: #12263f;
-    --skin-link: #0f6dbb;
-    --skin-danger: #b3363d;
-    --skin-deep: #e3f2ff;
-    --skin-deep-ink: #12263f;
-    --skin-deep-muted: #36506b;
-    --skin-deep-soft: rgba(18, 38, 63, 0.06);
-    --skin-deep-line: rgba(18, 38, 63, 0.16);
-    --skin-deep-pop: #0f6dbb;
-    --skin-foot: #e3f2ff;
-    --skin-foot-ink: #36506b;
-    --skin-foot-pop: #0f6dbb;
-    --skin-font: var(--font-display);
-    --skin-radius: 24px;
-    --skin-bw: 1px;
-    --skin-shadow: 0 14px 34px rgba(18, 38, 63, 0.10);
-    --skin-btn-radius: 9999px;
-    --skin-btn-shadow: 0 6px 16px rgba(15, 109, 187, 0.22);
-    --skin-btn-pop-shadow: 0 6px 16px rgba(255, 180, 174, 0.35);
+  [role="tabpanel"]:focus,
+  [role="tabpanel"]:focus-visible { outline: none; }
 
-    /* input background + shape */
-    --skin-input-bg: #f7fbff;
-    --skin-input-radius: 18px;
-
-    /* FIX (WCAG 1.4.11): dedicated input border that is ~3.4:1 on
-       --skin-input-bg. Test: DevTools reports >= 3.0 contrast for the input
-       boundary. --skin-line is left as the decorative light blue for any
-       legacy callers. */
-    --skin-input-border: #6f8fa9;
-
-    /* FIX (WCAG 1.4.11): the input focus ring now uses a solid --skin-focus
-       at high opacity (>= 4:1 on input background) instead of a 40%
-       translucent haze at ~1.5:1. Test: Tab to an input → the ring is
-       clearly visible in both light and dark monitor profiles. */
-    --skin-focus: #0b5a99;
-
-    /* FIX: explicit backdrop. UA default is very light (~10% black), which
-       looks under-shaded for a true modal. Test: open cart drawer / auth
-       dialog → page behind dims noticeably but remains legible. */
-    --skin-backdrop: rgba(18, 38, 63, 0.45);
-
-    /* FIX: explicit disabled treatment. UA default is inconsistent across
-       browsers. Test: disable a submit button → it visibly reads as disabled
-       (reduced contrast, cursor not-allowed). */
-    --skin-disabled-bg: #cfd9e3;
-    --skin-disabled-ink: #6b7f94;
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-/* ==============================================================================
-   7. SHARED COMPONENTS
-   ============================================================================== */
+/* ---- 5. CARDS / BUTTONS / INPUTS ----------------------------------------- */
 @layer components {
-
-  /* ---- Cards ------------------------------------------------------------- */
   .skin-card {
     background: var(--skin-surface);
     color: var(--skin-ink);
@@ -290,40 +215,25 @@
     border-radius: var(--skin-radius);
     box-shadow: var(--skin-shadow);
   }
-  /* FIX: cards whose border is decorative now get an explicit affordance hint
-     via `data-strong-border` for content that needs a stronger outline
-     (e.g. media-heavy cards on a busy background). Test: force this attribute
-     on a card → the border becomes visibly darker. */
-  .skin-card[data-strong-border] {
-    border-color: var(--skin-input-border);
-  }
+  .skin-card--flat { box-shadow: none; }
+  .skin-card[data-strong-border] { border-color: var(--skin-input-border); }
 
-  /* ---- Buttons ----------------------------------------------------------- */
   .skin-btn {
     background: var(--skin-accent);
     color: var(--skin-accent-ink);
     border-radius: var(--skin-btn-radius);
     box-shadow: var(--skin-btn-shadow);
-    /* FIX (perf): background-color transition replaces filter so the button
-       does not create a stacking context on hover (fixes blurry text on some
-       Windows DPI scales, and keeps the whole compositor-free paint path).
-       Test: DevTools → Rendering → Paint flashing; hovering a .skin-btn
-       should flash only the button rect, not its text descendants. */
-    transition: transform 0.15s, background-color 0.15s, box-shadow 0.15s;
+    transition: transform 180ms var(--soft-ease), background-color 180ms var(--soft-ease);
   }
   .skin-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    background: color-mix(in srgb, var(--skin-accent) 92%, white);
+    transform: translateY(-1.5px);
+    background: color-mix(in oklch, var(--skin-accent) 92%, white);
   }
   .skin-btn:active:not(:disabled) {
-    transform: translateY(0);
-    background: color-mix(in srgb, var(--skin-accent) 85%, black);
-    box-shadow: 0 3px 8px rgba(15, 109, 187, 0.18);
+    transform: translateY(0.5px);
+    background: color-mix(in oklch, var(--skin-accent) 88%, black);
   }
-  /* FIX: explicit disabled state. Test: <button class="skin-btn" disabled> →
-     grey pill, muted label, cursor not-allowed. */
-  .skin-btn:disabled,
-  .skin-btn[aria-disabled="true"] {
+  .skin-btn:disabled, .skin-btn[aria-disabled="true"] {
     background: var(--skin-disabled-bg);
     color: var(--skin-disabled-ink);
     box-shadow: none;
@@ -331,17 +241,9 @@
     pointer-events: none;
     transform: none;
   }
-
-  /* FIX: keyboard focus on buttons gets a light halo on top of the dark
-     outline so the ring reads against BOTH the page (dark outline) and the
-     button face (light halo). Test: Tab to a coral pill → the ring is visible
-     without the button disappearing into it. */
   .skin-btn:focus-visible {
-    outline: 3px solid var(--skin-focus);
-    outline-offset: 2px;
-    box-shadow:
-      var(--skin-btn-shadow),
-      0 0 0 5px rgba(255, 255, 255, 0.9);
+    outline: 3px solid color-mix(in oklch, var(--skin-focus) 62%, transparent);
+    outline-offset: 3px;
   }
 
   .skin-btn-pop {
@@ -349,57 +251,47 @@
     color: var(--skin-pop-ink);
     box-shadow: var(--skin-btn-pop-shadow);
   }
-  .skin-btn-pop:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--skin-pop) 92%, white);
+  .skin-btn-pop:hover:not(:disabled) { background: color-mix(in oklch, var(--skin-pop) 92%, white); }
+  .skin-btn-pop:active:not(:disabled) { background: color-mix(in oklch, var(--skin-pop) 88%, black); }
+
+  .skin-btn-soft {
+    background: var(--skin-surface);
+    color: var(--skin-ink);
+    border: 1px solid var(--skin-edge);
+    box-shadow: none;
   }
-  .skin-btn-pop:active:not(:disabled) {
-    background: color-mix(in srgb, var(--skin-pop) 85%, black);
-    box-shadow: 0 3px 8px rgba(255, 180, 174, 0.25);
+  .skin-btn-soft:hover:not(:disabled) { background: var(--color-sun); }
+  .skin-btn-soft:active:not(:disabled) {
+    background: color-mix(in oklch, var(--color-sun) 85%, black);
   }
-  .skin-btn-pop:focus-visible {
-    box-shadow:
-      var(--skin-btn-pop-shadow),
-      0 0 0 5px rgba(255, 255, 255, 0.9);
+  .skin-btn-soft:focus-visible {
+    outline: 3px solid var(--skin-focus);
+    outline-offset: 3px;
   }
 
-  /* ---- Inputs ------------------------------------------------------------ */
   .skin-input {
     background: var(--skin-input-bg);
     color: var(--skin-ink);
-    border: 2px solid var(--skin-input-border);
+    border: 2px solid color-mix(in oklch, var(--skin-input-border) 80%, white);
     border-radius: var(--skin-input-radius);
-    transition: border-color 0.15s, box-shadow 0.15s;
+    transition: border-color 180ms var(--soft-ease), box-shadow 180ms var(--soft-ease);
   }
-  .skin-input::placeholder { color: var(--skin-muted); opacity: 0.9; }
-
-  /* FIX: solid, high-contrast ring (>= 4:1 on --skin-input-bg). Also sets
-     border-color to --skin-focus so the ring and the border agree — no more
-     "blue border + faint blue halo" mismatch. */
-  .skin-input:focus,
-  .skin-input:focus-within {
+  .skin-input::placeholder {
+    color: color-mix(in oklch, var(--skin-muted) 86%, white);
+    opacity: 1;
+  }
+  .skin-input:focus, .skin-input:focus-within {
     outline: none;
     border-color: var(--skin-focus);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--skin-focus) 75%, transparent);
+    box-shadow: 0 0 0 4px var(--soft-ring);
   }
-  /* Keep the global :focus-visible outline suppressed on inputs since the
-     box-shadow IS the ring; otherwise keyboard users see two rings.
-     Test: Tab to input → exactly one ring is visible. */
-  .skin-input:focus-visible { outline: none; }
-
   .skin-input:disabled {
-    background: #eef3f8;
+    background: var(--skin-disabled-bg);
     color: var(--skin-disabled-ink);
-    border-color: #d3dde6;
     cursor: not-allowed;
   }
 
-  /* ---- <dialog> base ----------------------------------------------------- */
-  /* FIX (drawer positioning): the original <dialog> defaults to centered,
-     so `translateX(100%)` slid from the middle of the viewport, not the right
-     edge. Positioning is set on the components layer; utilities on the element
-     still win (later cascade layer), so nothing existing breaks.
-     Test: open cart drawer on a 1440px screen → panel slides in from the
-     right edge, not from the centre. */
+  /* Dialogs */
   dialog.drawer {
     position: fixed;
     inset: 0 0 0 auto;
@@ -407,78 +299,243 @@
     height: 100dvh;
     max-height: 100dvh;
     border: 0;
-    border-left: var(--skin-bw) solid var(--skin-edge);
-    /* FIX: prevents the page behind from scrolling when the drawer content
-       is scrolled to the end (was chaining). Test: scroll to drawer bottom,
-       keep scrolling → page behind does not move. */
+    border-left: 1px solid var(--skin-edge);
+    box-shadow: -20px 0 48px -24px rgba(26,46,74,0.28);
     overscroll-behavior: contain;
   }
-  dialog.popup {
-    overscroll-behavior: contain;
-  }
-
-  dialog.drawer[open] { animation: drawer-in 0.3s ease-out; }
-  dialog.popup[open]  { animation: popup-in 0.25s ease-out; }
-
-  /* FIX: explicit backdrop darkness (UA default is far too light). */
+  dialog.popup { overscroll-behavior: contain; }
+  dialog.drawer[open] { animation: drawer-in 320ms var(--soft-ease-out); }
+  dialog.popup[open]  { animation: popup-in  240ms var(--soft-ease-out); }
   dialog[open]::backdrop {
     background: var(--skin-backdrop);
-    animation: fade-in 0.25s ease-out;
+    animation: fade-in 240ms var(--soft-ease);
   }
+  @keyframes drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+  @keyframes popup-in  { from { opacity: 0; transform: translateY(8px) scale(0.99); } to { opacity: 1; transform: none; } }
+  @keyframes fade-in   { from { opacity: 0; } to { opacity: 1; } }
 
-  @keyframes drawer-in {
-    from { transform: translateX(100%); opacity: 0; }
-    to   { transform: none; opacity: 1; }
-  }
-  @keyframes popup-in {
-    from { transform: translateY(16px) scale(0.97); opacity: 0; }
-    to   { transform: none; opacity: 1; }
-  }
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) {
+    .skin-btn, .skin-input { transition: none; }
+    .skin-btn:hover:not(:disabled), .skin-btn:active:not(:disabled) { transform: none; }
+    dialog.drawer[open], dialog.popup[open], dialog[open]::backdrop { animation: none; }
   }
 }
 
-/* ==============================================================================
-   8. PAGE: HOME and SHELF PAGES
-   ============================================================================== */
-
+/* ---- 6. ACCOUNT PRIMITIVES (avatar, fields, meter, alerts) ---------------- */
 @layer components {
-  /* the fan of covers on every hero. --x / --r / --z / --delay are set on each <img> by the component. */
-  .fan-cover {
-    transform:
-      translateX(calc(var(--x, 0px) * var(--s, 1)))
-      rotate(var(--r, 0deg));
-    z-index: var(--z, auto);
-    animation-delay: var(--delay, 0s);
+  .skin-avatar {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    border: 2px solid #ffffff;
+    background: linear-gradient(135deg,
+      var(--stage-apricot) 0%,
+      var(--stage-lilac) 55%,
+      var(--stage-glass) 100%);
+    font-family: var(--skin-font);
+    font-weight: 800;
+    color: var(--stage-ink);
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(26,46,74,0.10);
+  }
+  .skin-avatar--md { width: 5rem; height: 5rem; font-size: 1.875rem; }
+  .skin-avatar--lg { width: 6rem; height: 6rem; font-size: 2.25rem; }
+  @media (min-width: 768px) {
+    .skin-avatar--md { width: 6rem; height: 6rem; font-size: 2.25rem; }
+    .skin-avatar--lg { width: 7rem; height: 7rem; font-size: 2.75rem; }
   }
 
-  .kids-pick {
-    transform: rotate(var(--rot, 0deg));
+  .skin-field { display: grid; gap: 0.25rem; }
+  .skin-field > label { font-weight: 600; color: var(--stage-ink); }
+  .skin-field__hint {
+    margin-left: 0.25rem;
+    color: var(--skin-muted);
+    font-weight: 400;
+    font-size: 0.875rem;
   }
 
-  .sparkle { animation-delay: var(--delay, 0s); }
+  .skin-input-wrap { position: relative; }
+  .skin-input-wrap input { padding-right: 4.5rem; }
+  .skin-input-wrap__toggle {
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    display: inline-flex;
+    align-items: center;
+    padding-inline: 0.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--skin-link);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    min-width: 4rem;
+    border-radius: 0 9999px 9999px 0;
+    transition: background-color 180ms var(--soft-ease);
+  }
+  .skin-input-wrap__toggle:hover {
+    background: color-mix(in oklch, var(--skin-link) 12%, transparent);
+  }
+  .skin-input-wrap__toggle:focus-visible {
+    outline: 2px solid color-mix(in oklch, var(--skin-focus) 62%, transparent);
+    outline-offset: -4px;
+    box-shadow: 0 0 0 4px var(--soft-ring);
+  }
+
+  .skin-alert {
+    min-height: 1.5rem;
+    font-weight: 500;
+    color: var(--skin-danger);
+    background: color-mix(in oklch, var(--skin-danger) 10%, white);
+    border: 1px solid color-mix(in oklch, var(--skin-danger) 22%, transparent);
+    border-left: 3px solid var(--skin-danger);
+    border-radius: calc(var(--skin-input-radius) * 0.75);
+    padding: 0.35rem 0.6rem;
+    margin-inline: -0.5rem;
+  }
+
+  .skin-meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+  }
+  .skin-meta dt { font-weight: 700; color: var(--stage-ink); }
+  .skin-meta dd {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--skin-muted);
+  }
+
+  .skin-empty {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--skin-muted);
+  }
+
+  .skin-order__header { align-items: baseline; }
+  .skin-order__items  { list-style: none; padding: 0; margin: 0; }
+  .skin-order__footer {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--skin-line);
+  }
+
+  .skin-meter { display: grid; gap: 0.25rem; }
+  .skin-meter__track {
+    height: 0.375rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--stage-paper);
+  }
+  .skin-meter__fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 260ms var(--soft-ease-out), background-color 180ms var(--soft-ease);
+  }
+  .skin-meter__fill[data-score="1"] { background-color: var(--skin-strength-1); }
+  .skin-meter__fill[data-score="2"] { background-color: var(--skin-strength-2); }
+  .skin-meter__fill[data-score="3"] { background-color: var(--skin-strength-3); }
+  .skin-meter__fill[data-score="4"] { background-color: var(--skin-strength-4); }
 }
 
-/* ==============================================================================
-   8b. ONE LOOK FOR EVERY PAGE: type scale, buttons, chips, badges, cards
-   ==============================================================================
-   Every page (home, the five shelves, Research & Book, account) uses ONLY these for headings, intro text,
-   buttons, filter chips and cards, so sizes, colours and fonts can no longer drift apart.
-     .t-display  page title (h1)            .t-section  section title (h2)
-     .t-title    sub title (h3)             .t-card-title  title inside a card
-     .t-lede     intro paragraph            .t-body / .t-meta  normal and small text
-     .t-eyebrow  small pill above a title
-     .btn + .skin-btn / .skin-btn-pop / .skin-btn-soft    the three button colours
-     .chip       filter and tab pill        .badge      tiny label
-   To change the look of the whole site, change the numbers here (colours: section 1).
-   ============================================================================== */
+/* ---- 7. GLASS STAGE — one static gradient, no filters -------------------- */
 @layer components {
-  .t-display,
-  .t-section,
-  .t-title,
-  .t-card-title {
+  .skin-glass-stage {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: calc(var(--skin-radius) + 8px);
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+
+    background:
+      radial-gradient(circle at 1px 1px,
+        rgba(26,46,74,0.05) 1px, transparent 1.2px) 0 0 / 22px 22px,
+      radial-gradient(ellipse 65% 60% at 15% 10%,
+        var(--stage-apricot) 0%, transparent 55%),
+      radial-gradient(ellipse 60% 55% at 88% 88%,
+        var(--stage-glass) 0%, transparent 55%),
+      radial-gradient(ellipse 55% 50% at 82% 12%,
+        var(--stage-lilac) 0%, transparent 55%),
+      var(--stage-ivory);
+
+    border: 1px solid rgba(255,255,255,0.65);
+    box-shadow: 0 20px 60px -24px rgba(59,142,214,0.16);
+  }
+
+  .skin-glass-stage > * { position: relative; z-index: 1; }
+
+  .skin-glass-lede {
+    max-width: 52ch;
+    margin-bottom: 1.25rem;
+    padding: 0 0.25rem;
+    color: var(--skin-muted);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .skin-glass-card {
+    /* Slightly translucent white so the stage colors glow through.
+       NO backdrop-filter → near-zero paint cost. */
+    background: rgba(255,255,255,0.90);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: var(--skin-radius);
+    box-shadow:
+      0 2px 4px rgba(26,46,74,0.04),
+      0 12px 28px -16px rgba(26,46,74,0.10);
+    color: var(--stage-ink);
+    transition: transform 180ms var(--soft-ease-out), box-shadow 180ms var(--soft-ease-out);
+  }
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .skin-glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 4px 8px rgba(26,46,74,0.06),
+        0 20px 40px -16px rgba(26,46,74,0.14);
+    }
+  }
+
+  .skin-glass-card .skin-input { background: rgba(255,255,255,0.95); }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .skin-glass-stage { background: var(--stage-ivory); }
+    .skin-glass-card  { background: #ffffff; }
+  }
+  @media (prefers-contrast: more) {
+    .skin-glass-stage { background: #ffffff; border-color: var(--stage-ink); }
+    .skin-glass-card  {
+      background: #ffffff;
+      border-color: var(--skin-input-border);
+      box-shadow: 0 0 0 2px var(--skin-input-border);
+    }
+  }
+  @media (forced-colors: active) {
+    .skin-glass-stage, .skin-glass-card {
+      background: Canvas;
+      border: 1px solid CanvasText;
+      box-shadow: none;
+      color: CanvasText;
+    }
+    .skin-avatar, .skin-meter__track, .skin-meter__fill, .skin-alert {
+      background: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      box-shadow: none;
+      forced-color-adjust: none;
+    }
+    .skin-input-wrap__toggle { color: LinkText; }
+  }
+}
+
+/* ---- 8. TYPE + SHARED ---------------------------------------------------- */
+@layer components {
+  .t-display, .t-section, .t-title, .t-card-title {
     font-family: var(--font-display);
     font-weight: 800;
     color: var(--color-ink);
@@ -492,7 +549,7 @@
 
   .t-lede { max-width: 44ch; font-size: clamp(1.25rem, 2vw, 1.5rem); line-height: 1.4; color: var(--color-muted); }
   .t-body { font-size: 1.0625rem; line-height: 1.55; color: var(--color-muted); }
-  .t-meta { font-size: 0.9375rem; line-height: 1.4;  font-weight: 500; color: var(--color-muted); }
+  .t-meta { font-size: 0.9375rem; line-height: 1.4; font-weight: 500; color: var(--color-muted); }
 
   .t-eyebrow {
     display: inline-block;
@@ -502,10 +559,8 @@
     font-size: 0.875rem;
     font-weight: 700;
     color: var(--color-blue);
-    box-shadow: 0 2px 8px rgba(18, 38, 63, 0.08);
   }
 
-  /* layout part of a button (colours come from .skin-btn, .skin-btn-pop or .skin-btn-soft) */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -518,17 +573,6 @@
   }
   .btn-lg { min-height: 3.5rem; padding-inline: 2rem; font-size: 1.125rem; }
 
-  .skin-btn-soft {
-    background: var(--skin-surface);
-    color: var(--skin-ink);
-    border: 1px solid var(--skin-edge);
-    box-shadow: none;
-  }
-  .skin-btn-soft:hover:not(:disabled) { background: var(--color-sun); }
-  .skin-btn-soft:active:not(:disabled) { background: color-mix(in srgb, var(--color-sun) 85%, black); box-shadow: none; }
-  .skin-btn-soft:focus-visible { box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.9); }
-
-  /* filter + tab pills: one size, one colour pair. Pressed / current page = filled blue. */
   .chip {
     display: inline-flex;
     align-items: center;
@@ -554,7 +598,7 @@
   .chip[aria-pressed="true"]:hover,
   .chip[aria-current="page"]:hover,
   .chip[aria-current="true"]:hover {
-    background: color-mix(in srgb, var(--skin-accent) 92%, white);
+    background: color-mix(in oklch, var(--skin-accent) 92%, white);
   }
 
   .badge {
@@ -568,18 +612,37 @@
     color: var(--color-ink);
   }
 
-  /* the standard white card for lists of things (same as .skin-card, but with the hover lift) */
   .card-lift { transition: transform 0.2s; }
   .card-lift:hover { transform: translateY(-4px); }
+
+  .site-header-row {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.2s ease-out, opacity 0.2s ease-out;
+  }
+  .site-header-row > * { min-height: 0; overflow: hidden; }
+  .site-header[data-tuck="subtabs"] [data-row="subtabs"],
+  .site-header[data-tuck="tabs"]    [data-row="subtabs"] { grid-template-rows: 0fr; opacity: 0; }
+  .site-header[data-tuck="tabs"]    [data-row="tabs"]    { grid-template-rows: 0fr; opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { .site-header-row { transition: none; } }
 }
 
-/* ==============================================================================
-   9. PAGE: MOTION LAB
-   ============================================================================== */
+/* ---- 9. HOME / SHELF ----------------------------------------------------- */
+@layer components {
+  .fan-cover {
+    transform: translateX(calc(var(--x, 0px) * var(--s, 1))) rotate(var(--r, 0deg));
+    z-index: var(--z, auto);
+    animation-delay: var(--delay, 0s);
+  }
+  .kids-pick { transform: rotate(var(--rot, 0deg)); }
+  .sparkle   { animation-delay: var(--delay, 0s); }
+}
+
+/* ---- 10. MOTION LAB ------------------------------------------------------ */
 @layer components {
   .math-plane {
-    --plane-minor: color-mix(in srgb, var(--skin-ink) 7%, transparent);
-    --plane-major: color-mix(in srgb, var(--skin-ink) 16%, transparent);
+    --plane-minor: rgba(26,46,74,0.06);
+    --plane-major: rgba(26,46,74,0.12);
     background-image:
       linear-gradient(var(--plane-major) 1px, transparent 1px),
       linear-gradient(90deg, var(--plane-major) 1px, transparent 1px),
@@ -588,13 +651,11 @@
     background-size:
       var(--M, 120px) var(--M, 120px), var(--M, 120px) var(--M, 120px),
       var(--u, 24px)  var(--u, 24px),  var(--u, 24px)  var(--u, 24px);
-    background-position:
-      left var(--ox, 0px) bottom var(--oy, 0px);
+    background-position: left var(--ox, 0px) bottom var(--oy, 0px);
   }
-  .math-plane-axis-x,
-  .math-plane-axis-y {
+  .math-plane-axis-x, .math-plane-axis-y {
     position: absolute;
-    background: color-mix(in srgb, var(--skin-link) 75%, transparent);
+    background: color-mix(in oklch, var(--skin-link) 75%, transparent);
   }
   .math-plane-axis-x { left: 0; right: 0; bottom: calc(var(--oy, 0px) - 1px); height: 2px; }
   .math-plane-axis-y { top: 0; bottom: 0; left: var(--ox, 0px); width: 2px; }
@@ -609,34 +670,15 @@
   .motion-hop-label { bottom: calc(var(--oy, 0px) + var(--hop, 0px) + 4px); }
   .motion-hop-line  { bottom: calc(var(--oy, 0px) + var(--hop, 0px)); }
 
-  /* purchased book */
-  .bm {
-    --bm-hue: 200;
-    --bm-a: 0;
-    --bm-shadow: 1;
-    position: relative;
-    display: block;
-    perspective: 700px;
-    cursor: pointer;
-    text-align: left;
-    border-radius: 0.5rem;
-  }
-  .bm:focus-visible {
-    outline: 3px solid var(--skin-focus);
-    outline-offset: 4px;
-  }
+  .bm { --bm-hue: 200; --bm-a: 0; --bm-shadow: 1; position: relative; display: block; perspective: 700px; cursor: pointer; text-align: left; border-radius: 0.5rem; }
+  .bm:focus-visible { outline: 3px solid var(--skin-focus); outline-offset: 4px; }
   .bm-card {
     position: relative;
     transform-style: preserve-3d;
     border-radius: 0.5rem;
-    box-shadow:
-      0 0 calc(var(--bm-a) * 30px) calc(var(--bm-a) * 6px)
-      hsl(var(--bm-hue) 95% 58% / var(--bm-a));
+    box-shadow: 0 0 calc(var(--bm-a) * 30px) calc(var(--bm-a) * 6px) hsl(var(--bm-hue) 95% 58% / var(--bm-a));
   }
-  .bm-face {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
+  .bm-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
   .bm-back {
     position: absolute;
     inset: 0;
@@ -653,21 +695,17 @@
   }
   .bm-shadow {
     position: absolute;
-    left: 8%;
-    right: 8%;
-    bottom: -7px;
+    left: 8%; right: 8%; bottom: -7px;
     height: 10px;
     border-radius: 50%;
-    background: rgb(20 18 43 / 0.3);
+    background: rgba(20,18,43,0.3);
     filter: blur(3px);
     opacity: var(--bm-shadow);
     transform: scaleX(var(--bm-shadow));
   }
 }
 
-/* ==============================================================================
-   10. SCROLL EFFECTS
-   ============================================================================== */
+/* ---- 11. SCROLL EFFECTS -------------------------------------------------- */
 @supports (animation-timeline: view()) {
   @keyframes rise {
     from { opacity: 0; transform: translateY(28px); }
@@ -678,10 +716,7 @@
     animation-timeline: view();
     animation-range: entry 0% entry 35%;
   }
-
-  @keyframes fab-away {
-    to { opacity: 0; visibility: hidden; pointer-events: none; }
-  }
+  @keyframes fab-away { to { opacity: 0; visibility: hidden; pointer-events: none; } }
   body { timeline-scope: --contact; }
   .contact-timeline { view-timeline: --contact block; }
   .fab-away {
@@ -690,65 +725,55 @@
     animation-range: entry 15% entry 55%;
   }
 }
-/* ==============================================================================
-   11. PAGE: RESEARCH & BOOK
-   ==============================================================================
-   This page used to carry its own look (square boxes, 2px black borders, monospace capitals, "window" title bars)
-   and a block of unlayered CSS that overrode Tailwind classes on everything inside it. All of that is gone: the page is
-   now built from the same pieces as every other page (.skin-card, .skin-btn, .chip, .badge, .t-*), so it matches
-   automatically. Only two small helpers remain.
-   ============================================================================== */
 
-/* long lists render lazily; scroll-margin keeps #anchor jumps below the sticky header */
+/* ---- 12. RESEARCH & BOOK ------------------------------------------------- */
 .rb-lazy {
   content-visibility: auto;
   contain-intrinsic-size: auto 420px;
   scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--header-h) + 1rem);
 }
 .rb-lazy[data-pinned] { content-visibility: visible; }
-
-/* dialogs (search + order) use the same dimmed backdrop as the cart drawer */
 .rb-dialog { background: var(--skin-backdrop); }
 
-/* ==============================================================================
-   12. ACCESSIBILITY AND PAGE STATE
-   ============================================================================== */
-
-/* reduced motion */
+/* ---- 13. ACCESSIBILITY --------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-
   *:not(.fab-away), *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-
   .reveal { animation: none !important; }
-  dialog.drawer[open], dialog.popup[open], dialog[open]::backdrop {
-    animation: none !important;
-  }
+  dialog.drawer[open], dialog.popup[open], dialog[open]::backdrop { animation: none !important; }
 }
 
-/* FIX (new): prefers-contrast: more — users who ask for higher contrast get a
-   darker edge, a heavier focus ring, and a darker backdrop.
-   Test: DevTools → Rendering → Emulate prefers-contrast: more → card borders
-   and focus rings visibly strengthen. */
 @media (prefers-contrast: more) {
-  :root, [data-skin] {
+  :root {
     --skin-edge: #5f8aad;
-    --skin-input-border: #12263f;
+    --skin-input-border: #1a2e4a;
     --skin-focus: #003a66;
-    --skin-backdrop: rgba(18, 38, 63, 0.7);
-    --skin-shadow: 0 14px 34px rgba(18, 38, 63, 0.20);
+    --skin-backdrop: rgba(26,46,74,0.7);
+    --skin-shadow: 0 8px 24px rgba(26,46,74,0.20);
+    --skin-strength-1: #7a1418;
+    --skin-strength-2: #7a1418;
+    --skin-strength-3: #7a3300;
+    --skin-strength-4: #0a4a29;
   }
   :focus-visible { outline-width: 4px; }
   .skin-btn:focus-visible { outline-width: 4px; }
   .skin-input:focus { box-shadow: 0 0 0 4px var(--skin-focus); }
 }
 
-/* Page lock while a Research & Book dialog is open.
-   research/Modal.jsx adds and removes this class on <body>. */
-body.modal-open {
-  overflow: hidden;
+@media (forced-colors: active) {
+  .skin-card, .skin-input, .skin-avatar, .skin-order__footer { border: 2px solid CanvasText; }
+  .skin-meter__track { border: 1px solid CanvasText; }
+  .skin-meter__fill  { forced-color-adjust: none; }
 }
+
+body.modal-open { overflow: hidden; }
+
+/* ---- 14. MANUAL KILL SWITCH ----------------------------------------------
+   Add class="skin-reduce-fx" to <body> on slow devices. */
+.skin-reduce-fx .skin-glass-stage { background: var(--stage-ivory); }
+.skin-reduce-fx .skin-glass-card  { background: #ffffff; box-shadow: none; }
+.skin-reduce-fx .reveal           { animation: none !important; }
