@@ -14,13 +14,13 @@ export default function KidsBanner() {
       <Container>
         <a
           href={`#/${kids.id}`}
-          className="group relative isolate flex flex-col gap-8 overflow-hidden rounded-[32px] border border-line bg-gradient-to-br from-[#d6ecff] to-[#ffe3e0] p-6 font-display text-ink shadow-[0_10px_24px_rgba(18,38,63,0.12)] transition-transform duration-200 hover:-translate-y-1 md:flex-row md:items-center md:justify-between md:p-12 [background-image:radial-gradient(rgba(255,255,255,0.55)_2.5px,transparent_3px)] [background-size:34px_34px]"
+          className="skin-card card-lift group relative isolate flex flex-col gap-8 overflow-hidden bg-linear-to-br from-[#d6ecff] to-[#ffe3e0] p-6 text-ink md:flex-row md:items-center md:justify-between md:p-12"
         >
           <div className="max-w-[34ch]">
-            <p className="mb-4 inline-block rounded-full bg-white px-4 py-1.5 text-base font-bold shadow-[0_10px_24px_rgba(18,38,63,0.12)]">🧸 New: the Kids Corner</p>
-            <h2 className="text-[clamp(2.4rem,8vw,4.5rem)] leading-[0.95] font-bold tracking-[-0.02em]">A whole shop just for kids</h2>
-            <p className="mt-3 text-xl md:text-2xl">Picture books, bedtime stories, learning, adventures and colouring. Ages 3 to 10.</p>
-            <span className="mt-6 inline-flex min-h-14 items-center rounded-full bg-coral px-8 text-lg font-bold text-ink shadow-[0_10px_24px_rgba(18,38,63,0.12)] transition group-hover:-translate-y-0.5">
+            <p className="t-eyebrow mb-4">🧸 New: the Kids Corner</p>
+            <h2 className="t-section">A whole shop just for kids</h2>
+            <p className="t-lede mt-3">Picture books, bedtime stories, learning, adventures and colouring. Ages 3 to 10.</p>
+            <span className="btn btn-lg skin-btn skin-btn-pop mt-6">
               Enter the Kids Corner →
             </span>
           </div>

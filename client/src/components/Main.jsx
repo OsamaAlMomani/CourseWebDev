@@ -3,9 +3,9 @@ import { useCatalog } from '../context/CatalogContext'
 import Home from './Home'
 import AccountPage from './AccountPage'
 import AudiencePage from './AudiencePage'
-import Contact from './Contact'
 import MotionLab from './MotionLab'
 import ResearchPage from './research/ResearchPage'
+import { scrollToContactIfAsked } from '../lib/contactLink'
 
 // The router outlet: shows the home page, or the page for whichever group is in the address.
 export default function Main({ route }) {
@@ -23,6 +23,8 @@ export default function Main({ route }) {
       first.current = false // don't jump on first load, someone might have opened #contact
       return
     }
+    // arriving from the Contact button on another page: glide to the form instead of the top
+    if (scrollToContactIfAsked()) return
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [group, isAccount, isLab, isResearch])
 
@@ -30,7 +32,6 @@ export default function Main({ route }) {
     <main id="main">
       {/* key makes React start a fresh page (and a fresh filter) when you switch groups */}
       {isLab ? <MotionLab /> : isResearch ? <ResearchPage /> : isAccount ? <AccountPage /> : group ? <AudiencePage key={group.id} group={group} /> : <Home />}
-      {!isLab && !isResearch && <Contact />}
     </main>
   )
 }

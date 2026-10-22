@@ -6,6 +6,7 @@ import Perks from './Perks'
 import FeatureBook from './FeatureBook'
 import Watch from './Watch'
 import Newsletter from './Newsletter'
+import Contact from './Contact'
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <FeatureBook />
       <Watch />
       <Newsletter />
+      <Contact />
     </>
   )
 }

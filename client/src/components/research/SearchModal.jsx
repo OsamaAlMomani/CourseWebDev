@@ -80,8 +80,6 @@ export default function SearchModal({ initialQuery = '', initialType = '', initi
     if (active >= 0) document.getElementById(`sr-${active}`)?.scrollIntoView({ block: 'nearest' })
   }, [active])
 
-  const chip = (on) => `min-h-11 border-2 border-ink px-3 font-mono text-sm font-bold tracking-wide uppercase ${on ? 'bg-rb-blue text-white' : 'bg-white text-ink hover:bg-rb-rose'}`
-
   let message = ''
   if (status === 'loading') message = 'Searching…'
   else if (status === 'error') message = 'Search is not available right now. Please try again.'
@@ -90,7 +88,7 @@ export default function SearchModal({ initialQuery = '', initialType = '', initi
   return (
     <Modal label="Search news, research papers and books" onClose={onClose} initialFocus={input} align="top" className="md:mt-[6vh] md:max-w-3xl">
       <div className="grid gap-4 p-4 md:p-6">
-        <div className="flex items-center gap-3 border-2 border-ink bg-white p-1 shadow-[0_10px_30px_rgba(18,38,63,0.10)]">
+        <div className="skin-input flex items-center gap-3 p-1 pl-4">
           <label htmlFor="rb-search" className="sr-only">
             Search news, research papers and books
           </label>
@@ -110,41 +108,41 @@ export default function SearchModal({ initialQuery = '', initialType = '', initi
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            className="min-h-14 w-full bg-transparent px-3 font-display text-xl font-bold outline-none placeholder:text-ink/60 md:text-2xl"
+            className="min-h-12 w-full bg-transparent text-lg font-medium outline-none placeholder:text-muted md:text-xl"
           />
-          <button type="button" onClick={onClose} className="min-h-12 shrink-0 bg-ink px-3 font-mono text-sm font-bold text-white uppercase hover:bg-rb-blue">
+          <button type="button" onClick={onClose} className="btn skin-btn shrink-0">
             Esc<span className="sr-only"> — close search</span>
           </button>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <fieldset>
-            <legend className="mb-1 font-mono text-xs font-bold tracking-widest uppercase">Content type</legend>
+            <legend className="mb-2 text-sm font-bold text-ink">Content type</legend>
             <div className="flex flex-wrap gap-2">
               {TYPE_OPTIONS.map(([value, label]) => (
-                <button key={label} type="button" aria-pressed={type === value} onClick={() => setType(value)} className={chip(type === value)}>
+                <button key={label} type="button" aria-pressed={type === value} onClick={() => setType(value)} className="chip">
                   {label}
                 </button>
               ))}
             </div>
           </fieldset>
           <fieldset>
-            <legend className="mb-1 font-mono text-xs font-bold tracking-widest uppercase">Difficulty</legend>
+            <legend className="mb-2 text-sm font-bold text-ink">Difficulty</legend>
             <div className="flex flex-wrap gap-2">
-              <button type="button" aria-pressed={level === ''} onClick={() => setLevel('')} className={chip(level === '')}>
+              <button type="button" aria-pressed={level === ''} onClick={() => setLevel('')} className="chip">
                 Any
               </button>
               {LEVELS.map((l) => (
-                <button key={l} type="button" aria-pressed={level === l} onClick={() => setLevel(l)} className={chip(level === l)}>
+                <button key={l} type="button" aria-pressed={level === l} onClick={() => setLevel(l)} className="chip capitalize">
                   {l}
                 </button>
               ))}
             </div>
           </fieldset>
         </div>
-        {level && (type === '' || type === 'news') && <p className="font-mono text-xs">News articles have no difficulty level, so they are hidden while a level is chosen.</p>}
+        {level && (type === '' || type === 'news') && <p className="t-meta">News articles have no difficulty level, so they are hidden while a level is chosen.</p>}
 
-        <p role="status" aria-live="polite" className="min-h-5 font-mono text-sm font-bold tracking-wide uppercase">
+        <p role="status" aria-live="polite" className="t-meta min-h-5 font-bold">
           {message}
         </p>
 
@@ -157,25 +155,25 @@ export default function SearchModal({ initialQuery = '', initialType = '', initi
               aria-selected={i === active}
               onMouseEnter={() => setActive(i)}
               onClick={() => pick(r)}
-              className={`rb-lazy cursor-pointer border-2 border-ink p-3 ${i === active ? 'bg-rb-rose shadow-[0_10px_30px_rgba(18,38,63,0.10)]' : 'bg-white'}`}
+              className={`skin-card rb-lazy cursor-pointer p-4 transition-colors ${i === active ? 'bg-sun' : ''}`}
             >
-              <p className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold tracking-widest uppercase">
-                <span className="bg-ink px-1.5 py-0.5 text-white">{TYPE_LABEL[r.type]}</span>
+              <p className="flex flex-wrap items-center gap-2 t-meta">
+                <span className="badge bg-ink text-white">{TYPE_LABEL[r.type]}</span>
                 <LevelBadge level={r.level} />
-                <span className="font-medium normal-case">
+                <span>
                   <Highlight text={r.meta} query={query} />
                 </span>
               </p>
-              <p className="mt-1 font-display text-xl leading-tight font-extrabold">
+              <p className="t-card-title mt-1">
                 <Highlight text={r.title} query={query} />
               </p>
-              <p className="mt-1 text-sm leading-snug">
+              <p className="t-body mt-1 text-[0.9375rem]">
                 <Highlight text={excerpt(r.snippet, query)} query={query} />
               </p>
             </li>
           ))}
         </ul>
-        <p className="font-mono text-xs">↑ ↓ to move · Enter to open · Esc to close</p>
+        <p className="t-meta">↑ ↓ to move · Enter to open · Esc to close</p>
       </div>
     </Modal>
   )

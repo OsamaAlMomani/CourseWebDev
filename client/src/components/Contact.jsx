@@ -63,10 +63,8 @@ export default function Contact() {
     <section id="contact" className="contact-timeline bg-skin-deep py-16 text-skin-deep-ink md:py-28">
       <Container className="grid grid-cols-[minmax(0,1fr)] gap-8 md:grid-cols-[1fr_1.25fr] md:items-start md:gap-12">
         <div>
-          <h2 className="font-skin text-[clamp(2.6rem,10vw,5rem)] leading-[0.92] font-extrabold tracking-[-0.04em] md:text-[clamp(2.4rem,5vw,4.5rem)]">
-            Talk to a real person
-          </h2>
-          <p className="mt-4 max-w-[44ch] text-xl text-skin-deep-muted">
+          <h2 className="t-section">Talk to a real person</h2>
+          <p className="t-lede mt-4">
             Tell us what you need and we&apos;ll ask only what matters for that. Most replies arrive within one
             business day.
           </p>

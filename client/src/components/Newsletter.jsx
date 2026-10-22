@@ -43,16 +43,14 @@ export default function Newsletter() {
   }
 
   return (
-    <section className="relative isolate overflow-hidden bg-gradient-to-br from-[#cfe8ff] via-[#e3f2ff] to-[#ffd9d5] py-16 text-ink md:py-20">
+    <section className="relative isolate overflow-hidden bg-linear-to-br from-[#cfe8ff] via-[#e3f2ff] to-[#ffd9d5] py-16 text-ink md:py-20">
       {/* soft circles for a bit of depth */}
       <div aria-hidden="true" className="absolute -top-16 -left-10 -z-10 size-56 rounded-full bg-sun/30 blur-sm" />
       <div aria-hidden="true" className="absolute -right-16 -bottom-20 -z-10 size-72 rounded-full bg-mint/25 blur-sm" />
       <Container className="grid grid-cols-[minmax(0,1fr)] gap-5 sm:grid-cols-2 sm:items-center">
         <div>
-          <h2 className="font-display text-[clamp(2.2rem,8vw,4rem)] leading-[0.95] font-extrabold tracking-[-0.03em]">
-            Get a book deal every Friday
-          </h2>
-          <p className="mt-3 text-lg opacity-90">One email a week. Unsubscribe whenever you like.</p>
+          <h2 className="t-section">Get a book deal every Friday</h2>
+          <p className="t-lede mt-3">One email a week. Unsubscribe whenever you like.</p>
         </div>
         <div>
           <form
@@ -74,7 +72,7 @@ export default function Newsletter() {
               inputMode="email"
               className="min-w-0 flex-1 bg-transparent px-4 text-lg text-ink outline-none"
             />
-            <Button as="button" type="submit" large disabled={status === 'saving'}>
+            <Button as="button" type="submit" variant="skin" large disabled={status === 'saving'}>
               {status === 'saving' ? 'Saving…' : 'Subscribe'}
             </Button>
           </form>

@@ -4,7 +4,7 @@
 // The unit lines are CSS gradients (see .math-plane in index.css); this file only adds the numbers and axis names.
 
 // where the axes cross, measured from the bottom-left corner (px)
-export const PLANE_ORIGIN = { x: 44, y: 36 }
+const PLANE_ORIGIN = { x: 44, y: 36 }
 
 export default function MathPlane({ as: Tag = 'div', unit = 24, major = 4, xLabel = 'x', yLabel = 'y', className = '', children, ...props }) {
   const step = unit * major // distance between numbered lines, px

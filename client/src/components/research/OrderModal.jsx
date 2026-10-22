@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import Modal, { WindowBar } from './Modal'
+import Modal, { DialogBar } from './Modal'
 import { Highlight, LevelBadge, money, stockInfo } from './bits'
 import { asset } from '../../lib/asset'
 import { fetchBooks, placeOrder } from '../../lib/researchApi'
 
 const MAX_QTY = 10
-const field = 'min-h-12 w-full border-2 border-ink bg-white px-3 text-base text-ink placeholder:text-ink/60'
-const BTN = 'rb-press min-h-11 border-2 border-ink px-4 font-mono text-sm font-bold tracking-wide uppercase shadow-[0_10px_30px_rgba(18,38,63,0.10)]'
+const field = 'skin-input min-h-12 w-full px-4 text-base'
+const label = 'mb-1 block text-sm font-bold text-ink'
 
 // The order window. Left: find books (title, author, ISBN or subject). Right: your order + delivery details.
 // The cart only remembers book ids and quantities. The server looks up prices and stock itself when you submit,
@@ -74,25 +74,25 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
   if (receipt) {
     return (
       <Modal label="Order placed" onClose={onClose} className="md:max-w-xl">
-        <WindowBar title="Order placed" onClose={onClose} />
+        <DialogBar title="Order placed" onClose={onClose} />
         <div className="grid gap-4 p-5 md:p-8">
-          <h3 className="font-display text-4xl leading-none font-extrabold">Thank you! Order #{receipt.id} is in.</h3>
-          <ul className="border-2 border-ink bg-white">
+          <h3 className="t-title md:text-4xl">Thank you! Order #{receipt.id} is in.</h3>
+          <ul className="overflow-hidden rounded-2xl border border-line bg-white">
             {receipt.items.map((i) => (
-              <li key={i.title} className="flex justify-between gap-3 border-b-2 border-ink p-3 last:border-b-0">
+              <li key={i.title} className="t-body flex justify-between gap-3 border-b border-line p-3 last:border-b-0">
                 <span>
                   {i.quantity} × {i.title}
                 </span>
-                <span className="font-mono">{money(i.unitPrice * i.quantity)}</span>
+                <span className="font-bold text-ink">{money(i.unitPrice * i.quantity)}</span>
               </li>
             ))}
-            <li className="flex justify-between gap-3 bg-rb-rose p-3 font-display text-xl font-extrabold">
+            <li className="flex justify-between gap-3 bg-sun p-3 font-display text-xl font-extrabold">
               <span>Total</span>
               <span>{money(receipt.total)}</span>
             </li>
           </ul>
-          <p>We will send the details to the email address you entered.</p>
-          <button type="button" onClick={onClose} className={`${BTN} w-fit bg-rb-rose`}>
+          <p className="t-body">We will send the details to the email address you entered.</p>
+          <button type="button" onClick={onClose} className="btn skin-btn skin-btn-pop w-fit">
             Back to the page
           </button>
         </div>
@@ -103,20 +103,20 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
   // ------------------------------------------------------------ the order window
   return (
     <Modal label="Order books" onClose={onClose} initialFocus={searchInput} className="md:max-w-6xl">
-      <WindowBar title="Order window" onClose={onClose} />
+      <DialogBar title="Order books" onClose={onClose} />
       <div className="grid gap-6 p-4 md:grid-cols-[1.15fr_1fr] md:p-6">
         {/* ---------- find books */}
         <section aria-labelledby="ow-find" className="grid content-start gap-4">
-          <h3 id="ow-find" className="font-display text-3xl leading-none font-extrabold">
+          <h3 id="ow-find" className="t-title">
             1. Pick your books
           </h3>
           <div>
-            <label htmlFor="ow-search" className="mb-1 block font-mono text-xs font-bold tracking-widest uppercase">
+            <label htmlFor="ow-search" className={label}>
               Search by title, author, ISBN or subject
             </label>
             <input ref={searchInput} id="ow-search" type="search" autoComplete="off" maxLength={80} value={q} onChange={(e) => setQ(e.target.value)} placeholder="e.g. statistics, Lindqvist, 9798891000018" className={field} />
           </div>
-          <p role="status" aria-live="polite" className="font-mono text-sm font-bold uppercase">
+          <p role="status" aria-live="polite" className="t-meta font-bold">
             {found.status === 'loading' ? 'Loading…' : found.status === 'error' ? 'Could not load books.' : `${found.books.length} book${found.books.length === 1 ? '' : 's'}`}
           </p>
           <ul className="grid max-h-[26rem] gap-3 overflow-y-auto pr-1 md:max-h-[34rem]">
@@ -125,22 +125,22 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
               const inCart = cart[b.id]?.quantity ?? 0
               const out = b.stock_quantity <= 0 || inCart >= Math.min(MAX_QTY, b.stock_quantity)
               return (
-                <li key={b.id} className="rb-lazy grid grid-cols-[72px_1fr] gap-3 border-2 border-ink bg-white p-3 sm:grid-cols-[72px_1fr_auto]">
-                  <img src={asset(b.cover_image_url)} alt={`Cover of ${b.title}`} width="72" height="96" loading="lazy" decoding="async" className="aspect-[3/4] w-[72px] border-2 border-ink" />
+                <li key={b.id} className="skin-card rb-lazy grid grid-cols-[72px_1fr] gap-3 p-3 sm:grid-cols-[72px_1fr_auto]">
+                  <img src={asset(b.cover_image_url)} alt={`Cover of ${b.title}`} width="72" height="96" loading="lazy" decoding="async" className="aspect-[3/4] w-[72px] rounded-lg object-cover" />
                   <div className="grid content-start gap-1">
-                    <p className="font-display text-lg leading-tight font-extrabold">
+                    <p className="t-card-title text-lg md:text-lg">
                       <Highlight text={b.title} query={q} />
                     </p>
-                    <p className="font-mono text-xs">
+                    <p className="t-meta">
                       <Highlight text={b.author} query={q} /> · ISBN {b.isbn}
                     </p>
                     <p className="flex flex-wrap items-center gap-2">
                       <LevelBadge level={b.difficulty_level} />
-                      <span className="font-display text-lg font-extrabold">{money(b.price)}</span>
-                      <span className={`border-2 border-ink px-1.5 font-mono text-[0.7rem] font-bold uppercase ${stock.cls}`}>{stock.label}</span>
+                      <span className="font-display text-lg font-extrabold text-blue">{money(b.price)}</span>
+                      <span className={`badge ${stock.cls}`}>{stock.label}</span>
                     </p>
                   </div>
-                  <button type="button" disabled={out} onClick={() => add(b)} className={`${BTN} col-span-2 sm:col-span-1 sm:self-center ${out ? 'cursor-not-allowed bg-rb-sky/50 text-ink/60 shadow-none' : 'bg-rb-rose'}`}>
+                  <button type="button" disabled={out} onClick={() => add(b)} className="btn skin-btn col-span-2 sm:col-span-1 sm:self-center">
                     {b.stock_quantity <= 0 ? 'Sold out' : inCart ? `Added (${inCart})` : 'Add'}
                     <span className="sr-only"> {b.title} to your order</span>
                   </button>
@@ -151,70 +151,70 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
         </section>
 
         {/* ---------- order + details */}
-        <form onSubmit={submit} className="grid content-start gap-4 border-2 border-ink bg-white p-4 shadow-[0_10px_30px_rgba(18,38,63,0.10)]" aria-labelledby="ow-order">
-          <h3 id="ow-order" className="font-display text-3xl leading-none font-extrabold">
+        <form onSubmit={submit} className="skin-card grid content-start gap-4 p-5" aria-labelledby="ow-order">
+          <h3 id="ow-order" className="t-title">
             2. Your order
           </h3>
 
           {lines.length === 0 ? (
-            <p className="border-2 border-dashed border-ink p-4">Your order is empty. Add a book from the list.</p>
+            <p className="t-body rounded-2xl border-2 border-dashed border-line p-4">Your order is empty. Add a book from the list.</p>
           ) : (
-            <ul className="border-2 border-ink">
+            <ul className="overflow-hidden rounded-2xl border border-line">
               {lines.map(({ book, quantity }) => (
-                <li key={book.id} className="grid gap-2 border-b-2 border-ink p-3 last:border-b-0">
+                <li key={book.id} className="grid gap-2 border-b border-line p-3 last:border-b-0">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="font-bold">{book.title}</p>
-                    <p className="font-mono text-sm">{money(book.price * quantity)}</p>
+                    <p className="font-bold text-ink">{book.title}</p>
+                    <p className="t-meta font-bold text-ink">{money(book.price * quantity)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button type="button" onClick={() => setQty(book.id, quantity - 1)} className="min-h-11 min-w-11 border-2 border-ink bg-white font-mono text-lg font-bold hover:bg-rb-rose" aria-label={`One fewer ${book.title}`}>
+                    <button type="button" onClick={() => setQty(book.id, quantity - 1)} className="chip min-w-11 justify-center px-0 text-lg" aria-label={`One fewer ${book.title}`}>
                       −
                     </button>
-                    <output aria-label={`Quantity of ${book.title}`} className="min-w-8 text-center font-mono text-lg font-bold">
+                    <output aria-label={`Quantity of ${book.title}`} className="min-w-8 text-center text-lg font-bold">
                       {quantity}
                     </output>
-                    <button type="button" onClick={() => setQty(book.id, quantity + 1)} disabled={quantity >= Math.min(MAX_QTY, book.stock_quantity)} className="min-h-11 min-w-11 border-2 border-ink bg-white font-mono text-lg font-bold hover:bg-rb-rose disabled:cursor-not-allowed disabled:opacity-40" aria-label={`One more ${book.title}`}>
+                    <button type="button" onClick={() => setQty(book.id, quantity + 1)} disabled={quantity >= Math.min(MAX_QTY, book.stock_quantity)} className="chip min-w-11 justify-center px-0 text-lg disabled:cursor-not-allowed disabled:opacity-40" aria-label={`One more ${book.title}`}>
                       +
                     </button>
-                    <button type="button" onClick={() => setQty(book.id, 0)} className="ml-auto min-h-11 px-2 font-mono text-sm font-bold underline underline-offset-4 hover:bg-rb-rose">
+                    <button type="button" onClick={() => setQty(book.id, 0)} className="ml-auto min-h-11 rounded-full px-3 text-sm font-bold text-blue underline underline-offset-4 hover:bg-sun">
                       Remove<span className="sr-only"> {book.title}</span>
                     </button>
                   </div>
                 </li>
               ))}
-              <li className="flex justify-between bg-rb-rose p-3 font-display text-xl font-extrabold">
+              <li className="flex justify-between bg-sun p-3 font-display text-xl font-extrabold">
                 <span>Total</span>
                 <span>{money(total)}</span>
               </li>
             </ul>
           )}
-          <p className="font-mono text-xs">Prices and stock are confirmed by our server when you order.</p>
+          <p className="t-meta">Prices and stock are confirmed by our server when you order.</p>
 
           <div>
-            <label htmlFor="ow-name" className="mb-1 block font-mono text-xs font-bold tracking-widest uppercase">
+            <label htmlFor="ow-name" className={label}>
               Full name
             </label>
             <input id="ow-name" name="name" autoComplete="name" required minLength={2} maxLength={100} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={field} />
           </div>
           <div>
-            <label htmlFor="ow-email" className="mb-1 block font-mono text-xs font-bold tracking-widest uppercase">
+            <label htmlFor="ow-email" className={label}>
               Email
             </label>
             <input id="ow-email" name="email" type="email" autoComplete="email" required maxLength={254} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={field} />
           </div>
           <div>
-            <label htmlFor="ow-address" className="mb-1 block font-mono text-xs font-bold tracking-widest uppercase">
+            <label htmlFor="ow-address" className={label}>
               Delivery address
             </label>
-            <textarea id="ow-address" name="address" autoComplete="street-address" required minLength={6} maxLength={300} rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={`${field} py-2`} />
+            <textarea id="ow-address" name="address" autoComplete="street-address" required minLength={6} maxLength={300} rows={3} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={`${field} rounded-2xl py-2`} />
           </div>
 
           {state.status === 'error' && (
-            <p ref={errorBox} tabIndex={-1} role="alert" className="border-2 border-ink bg-rb-coral p-3 font-bold text-ink">
+            <p ref={errorBox} tabIndex={-1} role="alert" className="rounded-2xl bg-coral p-3 font-bold text-ink">
               {state.error}
             </p>
           )}
-          <button type="submit" disabled={!lines.length || state.status === 'sending'} className={`${BTN} w-full bg-rb-blue py-3 text-base text-white disabled:cursor-not-allowed disabled:opacity-50`}>
+          <button type="submit" disabled={!lines.length || state.status === 'sending'} className="btn btn-lg skin-btn w-full">
             {state.status === 'sending' ? 'Placing order…' : `Place order · ${money(total)}`}
           </button>
         </form>

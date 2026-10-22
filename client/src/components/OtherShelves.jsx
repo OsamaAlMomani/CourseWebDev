@@ -12,9 +12,9 @@ export default function OtherShelves({ current }) {
   const kids = groups.find((g) => g.world === 'kids')
 
   return (
-    <section className="bg-paper py-12 text-ink md:py-16">
+    <section className="reveal bg-paper py-12 text-ink md:py-16">
       <Container>
-        <h2 className="font-display text-3xl font-extrabold tracking-[-0.03em] md:text-5xl">
+        <h2 className="t-section">
           {kidsWorld ? 'Shopping for someone older?' : 'Shopping for someone else?'}
         </h2>
         <div className="mt-6 flex flex-wrap gap-3">
@@ -22,24 +22,24 @@ export default function OtherShelves({ current }) {
             <a
               key={g.id}
               href={`#/${g.id}`}
-              className={`inline-flex min-h-12 items-center rounded-full px-6 text-lg font-bold transition hover:-translate-y-0.5 ${themes[g.id].pill}`}
+              className={themes[g.id].pill}
             >
               {g.title}
             </a>
           ))}
           {kidsWorld ? (
-            <a href="#/" className="inline-flex min-h-12 items-center rounded-full border-[3px] border-ink px-6 text-lg font-bold">
+            <a href="#/" className="btn skin-btn skin-btn-soft">
               Go to the main shop →
             </a>
           ) : (
             kids && (
-              <a href={`#/${kids.id}`} className="inline-flex min-h-12 items-center rounded-full bg-sun px-6 text-lg font-extrabold text-ink transition hover:-translate-y-0.5">
+              <a href={`#/${kids.id}`} className="btn skin-btn skin-btn-pop">
                 🧸 Kids Corner
               </a>
             )
           )}
           {!kidsWorld && (
-            <a href="#/" className="inline-flex min-h-12 items-center rounded-full border-[3px] border-ink px-6 text-lg font-bold">
+            <a href="#/" className="btn skin-btn skin-btn-soft">
               All shelves
             </a>
           )}

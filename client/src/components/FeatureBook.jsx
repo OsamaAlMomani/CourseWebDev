@@ -26,14 +26,12 @@ export default function FeatureBook() {
           <span className="mb-4 inline-block rounded-full bg-ink px-4 py-1 text-base font-bold text-white">
             Book of the month
           </span>
-          <h2 className="font-display text-[clamp(1.6rem,7.5vw,4rem)] leading-[0.95] font-extrabold tracking-[-0.03em] md:text-[clamp(2rem,4.8vw,3.75rem)]">
-            {book.title}
-          </h2>
-          <p className="mt-4 mb-6 max-w-[48ch] text-xl">
+          <h2 className="t-section">{book.title}</h2>
+          <p className="t-lede mt-4 mb-6">
             {book.author}. {book.blurb}
           </p>
-          <span className="mr-4 font-display text-4xl font-extrabold">{formatPrice(book.price)}</span>
-          <Button as="button" type="button" large disabled={book.stock === 0} onClick={() => addToCart(book)}>
+          <span className="mr-4 font-display text-4xl font-extrabold tracking-tight text-blue">{formatPrice(book.price)}</span>
+          <Button as="button" type="button" variant="skin" large disabled={book.stock === 0} onClick={() => addToCart(book)}>
             {book.stock === 0 ? 'Sold out' : 'Add to cart'}
           </Button>
         </div>

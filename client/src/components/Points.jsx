@@ -8,7 +8,7 @@ export default function Points({ group, theme }) {
         {group.points.map((p) => (
           <div key={p.title}>
             <h3 className={theme.pointTitle}>{p.title}</h3>
-            <p className={`mt-1 text-lg ${theme.pointText}`}>{p.text}</p>
+            <p className={`mt-1 ${theme.pointText}`}>{p.text}</p>
           </div>
         ))}
       </Container>

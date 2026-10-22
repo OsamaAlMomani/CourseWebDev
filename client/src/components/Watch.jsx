@@ -26,13 +26,11 @@ export default function Watch() {
           </video>
         </div>
         <div>
-          <p className="mb-2 text-base font-bold text-[#b3363d]" aria-live="polite">
+          <p className="mb-2 text-base font-bold text-skin-danger" aria-live="polite">
             {playing ? 'Now playing' : 'Tap play to watch'}
           </p>
-          <h2 className="font-display text-[clamp(2.4rem,9vw,4.5rem)] leading-[0.95] font-extrabold tracking-[-0.035em] md:text-[clamp(2.2rem,4.6vw,4.5rem)]">
-            GlobalBooks in 14 seconds
-          </h2>
-          <p className="mt-4 max-w-[46ch] text-xl text-muted">
+          <h2 className="t-section">GlobalBooks in 14 seconds</h2>
+          <p className="t-lede mt-4">
             A quick tour of every reader group, from first picture books to study guides. Tap play; the video only
             loads when you do, so it won&apos;t use your data on the way in.
           </p>

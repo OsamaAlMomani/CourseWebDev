@@ -6,19 +6,21 @@ const colours = [
   'bg-sun text-ink',
   'bg-coral text-ink',
   'bg-mint text-ink',
-  'bg-[#7dd3fc] text-ink',
-  'bg-[#ffb3d9] text-ink',
-  'bg-[#c4b5fd] text-ink',
+  'bg-[#bfe0fb] text-ink',
+  'bg-[#ffd9d5] text-ink',
+  'bg-[#d6f5ea] text-ink',
 ]
 
 // The Kids Corner's own menu: one big tile per kind of book. Clicking one filters the shelf below.
 export default function KidsCategories({ group, onPick }) {
   const { books } = useCatalog()
   return (
-    <section aria-label="What are you looking for?" className="font-display bg-white py-12 text-ink md:py-20">
+    <section aria-label="What are you looking for?" className="bg-white py-12 text-ink md:py-20">
       <Container>
-        <h2 className="font-display text-[clamp(2.2rem,8vw,4.5rem)] leading-[0.95] font-bold tracking-[-0.02em]">What do you feel like?</h2>
-        <p className="mt-3 mb-8 max-w-[40ch] text-xl text-muted md:text-2xl">Pick a corner. Everything for little readers is in here.</p>
+        <div className="reveal mb-8">
+          <h2 className="t-section">What do you feel like?</h2>
+          <p className="t-lede mt-3">Pick a corner. Everything for little readers is in here.</p>
+        </div>
 
         <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">
           {group.categories.map((c, i) => {
@@ -28,12 +30,12 @@ export default function KidsCategories({ group, onPick }) {
                 <button
                   type="button"
                   onClick={() => onPick(c.id)}
-                  className={`flex min-h-36 w-full flex-col items-start justify-between gap-3 rounded-[28px] border border-line p-4 text-left shadow-[0_10px_24px_rgba(18,38,63,0.12)] transition hover:-translate-y-1 hover:rotate-1 active:translate-y-1 active:shadow-[0_10px_24px_rgba(18,38,63,0.12)] md:min-h-44 md:p-6 ${colours[i % colours.length]}`}
+                  className={`flex min-h-36 w-full flex-col items-start justify-between gap-3 rounded-3xl border border-line p-4 text-left shadow-[0_10px_30px_rgba(18,38,63,0.08)] transition hover:-translate-y-1 active:translate-y-0 md:min-h-44 md:p-6 ${colours[i % colours.length]}`}
                 >
                   <span aria-hidden="true" className="text-5xl md:text-6xl">{c.icon}</span>
                   <span>
-                    <span className="block text-xl leading-tight font-bold md:text-2xl">{c.label}</span>
-                    <span className="block text-base opacity-80">{count} {count === 1 ? 'book' : 'books'}</span>
+                    <span className="t-card-title block">{c.label}</span>
+                    <span className="block text-base font-medium text-ink/80">{count} {count === 1 ? 'book' : 'books'}</span>
                   </span>
                 </button>
               </li>

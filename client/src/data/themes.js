@@ -1,52 +1,58 @@
 // How the pages look. Every reader group now shares ONE light theme (sky blue, light red, white cards),
 // so the whole site feels like the same shop. To change the look of everything, edit `light` below
-// (colours themselves live in src/index.css under @theme).
+// (colours and the type scale live in src/index.css: @theme and section 8b).
 // Class names are written out in full so Tailwind can find them.
 
 const light = {
-  font: 'font-display',
+  // one font setup for every section: body text in DM Sans (inherited), headings use the .t-* classes (Bricolage Grotesque)
+  font: 'font-body',
   header: 'bg-white/90 text-ink border-b border-line backdrop-blur',
   navBg: 'bg-white',
   navLink: 'text-ink md:text-ink/75 md:hover:text-blue',
   logoAccent: 'text-blue',
   contactBtn: 'bg-blue text-white',
   closeLink: 'text-blue',
-  pill: 'bg-white text-ink shadow-sm hover:bg-sun',
+  pill: 'btn skin-btn skin-btn-soft',
 
-  heroBg: 'bg-gradient-to-br from-[#dff1ff] to-[#ffe9e6] text-ink',
+  // hero: the SAME moving background on the home page, every shelf and Research & Book
+  heroVideo: 'video/hero.mp4',
+  heroPoster: 'video/hero-poster.jpg',
+  heroVideoCls: 'opacity-70',
+  videoBtn: 'bg-ink/70 text-white',
+  // light wash so the dark text stays readable, but thin enough that the video really shows through
+  heroShade: 'bg-linear-to-b from-white/75 to-[#dff1ff]/50 lg:bg-linear-to-r lg:from-white/90 lg:via-[#e8f4ff]/55 lg:to-[#dff1ff]/25',
+  heroBg: 'bg-linear-to-br from-[#dff1ff] to-[#ffe9e6] text-ink',
   heroPattern: '[background-image:radial-gradient(rgba(15,109,187,0.10)_2px,transparent_2px)] [background-size:28px_28px]',
-  heroHeading: 'font-display font-extrabold tracking-[-0.035em] leading-[0.95]',
+  heroHeading: 't-display',
   accent: 'text-blue',
-  kicker: 'inline-block rounded-full bg-white px-4 py-1.5 text-sm font-bold text-blue shadow-sm',
-  intro: 'text-ink/80',
-  cta: 'rounded-full bg-blue text-white shadow-[0_8px_20px_rgba(15,109,187,0.28)] hover:-translate-y-0.5',
+  kicker: 't-eyebrow',
+  intro: 't-lede',
+  cta: 'skin-btn',
   coverCls: 'rounded-xl shadow-[0_18px_36px_rgba(18,38,63,0.20)]',
-  fanAnim: '',
+  fanAnim: 'animate-float motion-reduce:animate-none',
 
   pointsBg: 'bg-[#e3f2ff] text-ink',
-  pointTitle: 'font-display text-2xl font-extrabold',
-  pointText: 'text-ink/75',
+  pointTitle: 't-title',
+  pointText: 't-body',
 
   shelfBg: 'bg-paper text-ink',
   shelfPattern: '',
-  shelfHeading: 'font-display font-extrabold tracking-[-0.035em]',
-  shelfNote: 'text-ink/70',
-  filterLabel: 'font-display',
-  filterOn: 'bg-blue text-white border-blue',
-  filterOff: 'bg-white text-ink border-line',
-  filterCount: 'text-ink/70',
+  shelfHeading: 't-section',
+  shelfNote: 't-lede',
+  filterLabel: 't-title',
+  filterCount: 't-meta',
 
-  card: 'rounded-3xl border border-line bg-white text-ink shadow-[0_10px_30px_rgba(18,38,63,0.08)] hover:-translate-y-1',
-  cardTitle: 'font-display font-extrabold',
-  cardMeta: 'text-base font-medium text-muted',
-  cardBlurb: 'text-base text-muted',
+  card: 'skin-card card-lift',
+  cardTitle: 't-card-title',
+  cardMeta: 't-meta',
+  cardBlurb: 't-body',
   cardPrice: 'font-display text-blue',
-  order: 'rounded-full bg-blue text-white hover:bg-[#0c5a9c]',
+  order: 'btn skin-btn',
   badge: 'bg-coral text-ink',
   stepper: 'border-line bg-[#e3f2ff] text-ink',
 
-  tileShape: 'rounded-3xl border border-line shadow-[0_10px_30px_rgba(18,38,63,0.08)]',
-  tileLine: 'text-ink/75',
+  tileShape: 'skin-card',
+  tileLine: 't-body',
   tileCta: 'text-blue',
 }
 

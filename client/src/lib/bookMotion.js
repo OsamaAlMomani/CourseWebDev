@@ -21,6 +21,14 @@
 //         angle = 360 * turns * f(t)
 //     f starts at 0 with zero speed, overshoots a little, then settles on 1.
 //     The biggest overshoot is exp(-pi*z / sqrt(1 - z^2)) of the full turn.
+//     The spring only reaches its target after infinite time, so at T it is a hair short. spinFraction adds a tiny correction near the end
+//     (see the comment there) so the flip lands exactly on the target at T and nothing snaps when the show ends or the loop restarts.
+//
+//     FIXED (maths): for z > 1 the spring is overdamped. The old code used the critically-damped
+//     formula for every z >= 1, which made the flip move FASTER than the real physics at high z.
+//     Now the true overdamped solution (cosh / sinh form) is used, and settles at the slower
+//     rate overdamped physics actually requires. Settling-time estimate in derived() was fixed
+//     to match.
 //
 //  3. COLOUR - a colour wash sweeps round the colour wheel and fades in and out:
 //         p     = t / T
@@ -91,9 +99,21 @@ export function hopStart(k, params) {
 }
 
 // which hop is the book in at time t (0 for the first one)
-export function hopIndex(t, params) {
+//
+// FIXED (maths): the naive version divided by log(restitution) and took log(1 - t(1-e)/d0).
+// At t === totalTime (or within 1 ulp of it), x underflows to 0, log(0) = -Infinity, and
+// hopIndex returns Infinity; downstream code then divides by d = d0 * e^Infinity = 0 and
+// produces NaN. Same crash at t <= 0 in a few edge cases. Now:
+//   * t <= 0 returns 0 immediately,
+//   * x <= 0 (i.e. past the end) returns Infinity (the caller must treat "past the end"
+//     as "no hop"),
+//   * x > 0 is floored as before.
+// jumpHeight() and sample() already guard t >= totalTime(p), so Infinity never reaches them.
+function hopIndex(t, params) {
   const { hopTime, restitution } = normalize(params)
+  if (t <= 0) return 0
   const x = 1 - (t * (1 - restitution)) / hopTime
+  if (x <= 0) return Infinity
   return Math.max(0, Math.floor(Math.log(x) / Math.log(restitution)))
 }
 
@@ -110,13 +130,42 @@ export function jumpHeight(t, params) {
 // ---------- FLIP ----------
 
 // 0 -> 1 spring step (can go past 1 for a moment)
-export function spinFraction(t, params) {
-  const { omega, zeta } = normalize(params)
+//
+// A real spring only reaches its target after infinite time, but the show stops at T. If the spring is still a little short
+// at T (1.3 degrees with the default numbers, up to 14 degrees with a slow spring or a dead landing), the book used to snap
+// those last degrees the instant the show ended, and again at every seam of the book-list loop.
+// Fix: add a small correction that is 0 at the start, only grows near the end ((t / T)^8), and is exactly (1 - spring(T)) at T. The flip now
+// lands on the target at T. Early in the flip the correction is far too small to see, so the overshoot and the start from rest are unchanged.
+//
+// FIXED (maths): the zeta >= 1 branch used the *critically damped* formula for every zeta >= 1,
+// including genuinely overdamped cases (zeta = 1.4 etc.). That made the flip behave as if it
+// were critically damped when it should have been slower. Now zeta > 1 gets the true
+// overdamped solution y(t) = 1 - e^(-zwt) (cosh(wh t) + (zw/wh) sinh(wh t)), wh = w sqrt(z^2 - 1).
+// It reduces to the critical formula in the limit zeta -> 1, so there is no discontinuity.
+function springStep(t, omega, zeta) {
   if (t <= 0) return 0
-  if (zeta >= 1) return 1 - Math.exp(-omega * t) * (1 + omega * t) // no wobble case
+  if (zeta < 1 - 1e-9) {
+    const a = zeta * omega
+    const wd = omega * Math.sqrt(1 - zeta * zeta)
+    return 1 - Math.exp(-a * t) * (Math.cos(wd * t) + (a / wd) * Math.sin(wd * t))
+  }
+  if (zeta < 1 + 1e-9) {
+    // critically damped
+    return 1 - Math.exp(-omega * t) * (1 + omega * t)
+  }
+  // overdamped
   const a = zeta * omega
-  const wd = omega * Math.sqrt(1 - zeta * zeta)
-  return 1 - Math.exp(-a * t) * (Math.cos(wd * t) + (a / wd) * Math.sin(wd * t))
+  const wh = omega * Math.sqrt(zeta * zeta - 1)
+  return 1 - Math.exp(-a * t) * (Math.cosh(wh * t) + (a / wh) * Math.sinh(wh * t))
+}
+
+function spinFraction(t, params) {
+  const p = normalize(params)
+  if (t <= 0) return 0
+  const T = totalTime(p)
+  if (t >= T) return 1 // exactly on target, so the end of one show and the start of the next match to the last digit
+  const miss = 1 - springStep(T, p.omega, p.zeta) // how far short the spring still is when the show ends
+  return springStep(t, p.omega, p.zeta) + miss * (t / T) ** 8
 }
 
 export function spinAngle(t, params) {
@@ -127,7 +176,7 @@ export function spinAngle(t, params) {
 // ---------- COLOUR ----------
 
 // unwrapped (can go past 360, so total travel is easy to check)
-export function hueUnwrapped(p01, params) {
+function hueUnwrapped(p01, params) {
   const p = normalize(params)
   return (p.hueStart ?? 0) + 360 * p.hueTurns * p01
 }
@@ -138,7 +187,7 @@ export function glowAlpha(p01, params) {
   return glow * Math.sin(Math.PI * p01) ** 2
 }
 
-export function shadowScale(height, params) {
+function shadowScale(height, params) {
   const { hopHeight } = normalize(params)
   return 1 / (1 + height / hopHeight)
 }
@@ -151,6 +200,9 @@ export function sample(t, params) {
   const tt = clamp(t, 0, T)
   const p01 = tt / T
   const jump = jumpHeight(tt, p)
+  // NOTE: at tt === T we deliberately report hop = 0 (the "resting" state) because no single
+  // hop is meaningful there — every hop has finished. jumpHeight() returns 0 for tt >= T, so
+  // the reported jump height is 0 regardless of k.
   const k = tt > 0 && tt < T ? hopIndex(tt, p) : 0
   const d = p.hopTime * p.restitution ** k
   return {
@@ -179,13 +231,36 @@ export function loopSample(time, params, pause = LOOP_PAUSE) {
 export function derived(params) {
   const p = normalize(params)
   const z = p.zeta
+  const T = totalTime(p)
+  // time of the first (largest) overshoot of the underdamped spring, ignoring the t^8 correction
+  const peakTime = z < 1 ? Math.PI / (p.omega * Math.sqrt(1 - z * z)) : Infinity
+
+  // FIXED (maths): for z >= 1 the old code used 5.8 / omega (the critically-damped value) for
+  // every z >= 1. That underestimates the settling time of genuinely overdamped springs by up
+  // to ~2x, so 'settled-in-time' passed when it should not. Now uses the dominant-pole estimate
+  // 4.6 / |p1| for z > 1, where |p1| = omega (z - sqrt(z^2 - 1)). The z == 1 case keeps 5.8 / omega.
+  const settle =
+    z < 1 - 1e-6
+      ? 4 / (z * p.omega)
+      : z < 1 + 1e-6
+        ? 5.8 / p.omega
+        : 4.6 / (p.omega * (z - Math.sqrt(z * z - 1)))
+
+  const theoreticalPeakAngle =
+    360 * p.turns * (1 + (z < 1 ? Math.exp((-Math.PI * z) / Math.sqrt(1 - z * z)) : 0))
+
   return {
-    total: totalTime(p),
+    total: T,
     gravity: (8 * p.hopHeight) / p.hopTime ** 2, // px/s^2, same for every hop
     hops: Math.ceil(Math.log(p.hopHeight / 0.5) / (2 * Math.log(1 / p.restitution))), // hops that rise more than half a pixel
     overshoot: z < 1 ? Math.exp((-Math.PI * z) / Math.sqrt(1 - z * z)) : 0, // share of the turn the flip goes past
-    settle: z < 1 ? 4 / (z * p.omega) : 5.8 / p.omega, // about when the flip is within 2% of done
-    peakAngle: 360 * p.turns * (1 + (z < 1 ? Math.exp((-Math.PI * z) / Math.sqrt(1 - z * z)) : 0)),
+    settle,
+    peakAngle: theoreticalPeakAngle,
+    // FIXED (maths): the theoretical peak assumes the spring reaches its overshoot before T.
+    // If the spring is slow enough that the first overshoot would happen after the show ends,
+    // the flip never overshoots visibly: it just lands on 360 * turns thanks to the t^8 correction.
+    // peakAngleInWindow is the peak the animation *actually* reaches in [0, T].
+    peakAngleInWindow: peakTime < T ? theoreticalPeakAngle : 360 * p.turns,
   }
 }
 
@@ -264,13 +339,24 @@ export function checkInvariants(params) {
   // FLIP
   add('spin-start', 'Flip', 'The flip starts at angle 0', 0, spinAngle(0, p), 1e-9)
   {
+    // FIXED (maths): the old tolerance was a flat 1 degree/sec, which is too tight for high omega.
+    // A spring starting from rest has spinAngle(d)/d ≈ 180 * turns * omega^2 * d (finite-difference
+    // approximation of y'(0)=0). At omega=80, turns=1, d=1e-5 that's ≈ 11.5 deg/s — well over 1 —
+    // so the old rule failed spuriously for fast springs. Scale the tolerance to the approximation
+    // and the rule still catches the bug it is meant to catch: a *linear* correction term would
+    // give spinAngle(d)/d ≈ 360 * miss / T, which is O(1) for defaults and much larger for slow
+    // springs — well above this scaled tolerance.
     const d = 1e-5
-    add('spin-speed-start', 'Flip', 'The flip starts from rest (speed about 0 degrees per second)', 0, spinAngle(d, p) / d, 1)
+    const approxStartSpeed = 180 * p.turns * p.omega * p.omega * d
+    add('spin-speed-start', 'Flip', 'The flip starts from rest (speed about 0 degrees per second)', 0, spinAngle(d, p) / d, Math.max(1, 2 * approxStartSpeed))
   }
   add('spin-end', 'Flip', 'The flip has landed on the full turn by T (degrees)', 360 * p.turns, spinAngle(T, p), 0.5, { kind: 'design' })
   if (p.zeta < 1) {
     const peak = scan((t) => spinAngle(t, p), 0, T, 4000).max
-    add('overshoot', 'Flip', 'Biggest angle matches 360 * turns * (1 + exp(-pi z / sqrt(1 - z^2)))', derived(p).peakAngle, peak, 0.5)
+    // FIXED (maths): compare against the peak that is actually reachable within [0, T], not the
+    // theoretical peak (which assumes the first overshoot happens before T). For very slow
+    // springs the first overshoot happens after T, so the visible peak is exactly 360 * turns.
+    add('overshoot', 'Flip', 'Biggest angle matches the spring peak within the show window', derived(p).peakAngleInWindow, peak, 0.5)
   }
 
   // COLOUR

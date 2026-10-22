@@ -1,73 +1,30 @@
 import { useCatalog } from '../context/CatalogContext'
 import { cover } from '../lib/asset'
-import Container from './Container'
+import PageHero, { fanOf } from './PageHero'
 import Button from './Button'
-import BackgroundVideo from './BackgroundVideo'
-import QuoteBackground from './QuoteBackground'
 
 // "Stories that are *all yours!*" -> the starred bit gets the accent style
 const renderHeadline = (text, accent) =>
   text.split('*').map((part, i) => (i % 2 ? <span key={i} className={accent}>{part}</span> : part))
 
+// A shelf's hero. It is the SAME PageHero as the home page: same video, wash, title size and floating covers.
+// Only the words and this group's own covers change.
 export default function AudienceHero({ group, theme }) {
   const { books } = useCatalog()
   const fanBooks = books.filter((b) => b.group === group.id).slice(0, 4)
-  const moving = theme.heroVideo || theme.heroQuotes // this shelf has a moving background
   const gap = fanBooks.length <= 2 ? 130 : 95 // fewer books, wider spread
 
   return (
-    <section
-      className={`relative isolate overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 lg:flex lg:min-h-[80svh] lg:items-center ${theme.font} ${theme.heroBg} ${moving ? '' : theme.heroPattern}`}
-    >
-      {/* shelves with a moving background: the video or the quotes, then a dark shade, an optional tint, then the grid pattern on top */}
-      {moving && (
-        <>
-          {theme.heroVideo && (
-            <BackgroundVideo src={theme.heroVideo} poster={theme.heroPoster} className={theme.heroVideoCls} buttonClass={theme.videoBtn} />
-          )}
-          {theme.heroQuotes && <QuoteBackground buttonClass={theme.videoBtn} />}
-          <div className={`absolute inset-0 -z-10 ${theme.heroShade}`} />
-          {theme.heroTint && <div className={`absolute inset-0 -z-10 ${theme.heroTint}`} />}
-          <div className={`absolute inset-0 -z-10 ${theme.heroPattern}`} />
-        </>
-      )}
-      <Container className="grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-        <div className={theme.heroPanel ?? ''}>
-          <p className={`mb-6 ${theme.kicker}`}>{group.kicker}</p>
-          <h1
-            className={`mb-6 text-[clamp(3rem,13vw,5.5rem)] font-extrabold md:text-[clamp(4rem,10vw,6.5rem)] lg:text-[clamp(3.5rem,7vw,6.5rem)] ${theme.heroHeading}`}
-          >
-            {renderHeadline(group.headline, theme.accent)}
-          </h1>
-          <p className={`mb-8 max-w-[40ch] text-xl md:text-2xl ${theme.intro}`}>{group.intro}</p>
-          <Button large variant="none" href="#shelf" className={theme.cta}>
-            {group.cta}
-          </Button>
-        </div>
-
-        {/* this group's own covers, fanned out */}
-        <div
-          aria-hidden="true"
-          className="relative flex h-[250px] justify-center [--s:0.5] min-[400px]:[--s:0.7] min-[500px]:h-[300px] min-[500px]:[--s:0.85] md:h-[370px] md:[--s:1] lg:[--s:0.8] xl:h-[440px] xl:[--s:1]"
-        >
-          {fanBooks.map((b, i) => {
-            const mid = (fanBooks.length - 1) / 2
-            const spot = i - mid // negative = left of centre
-            return (
-              <img
-                key={b.id}
-                src={cover(b.id)}
-                alt=""
-                width="200"
-                height="270"
-                decoding="async"
-                className={`fan-cover absolute bottom-0 h-auto w-32 min-[500px]:w-44 md:w-56 lg:w-52 xl:w-64 ${theme.coverCls} ${theme.fanAnim}`}
-                style={{ '--x': `${spot * gap}px`, '--r': `${spot * 9}deg`, '--z': 10 - Math.round(Math.abs(spot) * 2), '--delay': `${-i * 1.2}s` }}
-              />
-            )
-          })}
-        </div>
-      </Container>
-    </section>
+    <PageHero
+      kicker={group.kicker}
+      title={renderHeadline(group.headline, theme.accent)}
+      intro={group.intro}
+      covers={fanOf(fanBooks.map((b) => cover(b.id)), gap)}
+      actions={
+        <Button large variant="skin" href="#shelf">
+          {group.cta}
+        </Button>
+      }
+    />
   )
 }

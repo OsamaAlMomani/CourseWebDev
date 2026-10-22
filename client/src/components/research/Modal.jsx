@@ -60,9 +60,10 @@ export default function Modal({ label, onClose, children, initialFocus, align = 
   }, [])
 
   const place = align === 'top' ? 'items-start' : 'items-center'
+  // same dimmed backdrop as the cart drawer (.rb-dialog in index.css), same white rounded panel as every card on the site
   return createPortal(
-    <div className={`rb-dialog fixed inset-0 z-[100] flex justify-center ${place} bg-ink/75 p-0 md:p-8`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div ref={panel} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={`max-h-dvh w-full overflow-y-auto border-ink bg-rb-paper text-rb-ink md:max-h-[calc(100dvh-4rem)] md:border-2 md:shadow-[0_24px_60px_rgba(18,38,63,0.25)] ${className}`}>
+    <div className={`rb-dialog fixed inset-0 z-[100] flex justify-center ${place} p-0 md:p-8`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div ref={panel} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} className={`max-h-dvh w-full animate-rise-in overflow-y-auto bg-white text-ink motion-reduce:animate-none md:max-h-[calc(100dvh-4rem)] md:rounded-[28px] md:shadow-[0_24px_60px_rgba(18,38,63,0.25)] ${className}`}>
         {children}
       </div>
     </div>,
@@ -70,21 +71,14 @@ export default function Modal({ label, onClose, children, initialFocus, align = 
   )
 }
 
-// The black title bar every "window" on this page has.
-export function WindowBar({ title, onClose, closeLabel = 'Close' }) {
+// The title bar of every dialog on this page: the title on the left, a close pill on the right.
+export function DialogBar({ title, onClose, closeLabel = 'Close' }) {
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b-2 border-ink bg-rb-sky px-3 py-2 text-ink">
-      <div className="flex items-center gap-3">
-        <span aria-hidden="true" className="flex gap-1.5">
-          <span className="size-3 bg-rb-coral" />
-          <span className="size-3 bg-rb-rose" />
-          <span className="size-3 bg-rb-mint" />
-        </span>
-        <h2 className="font-mono text-sm font-medium tracking-widest uppercase">{title}</h2>
-      </div>
+    <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-white/95 px-5 py-3 backdrop-blur md:rounded-t-[28px]">
+      <h2 className="t-title">{title}</h2>
       {onClose && (
-        <button type="button" onClick={onClose} className="min-h-11 min-w-11 bg-white px-3 font-mono text-sm font-bold text-ink uppercase hover:bg-rb-rose">
-          <span aria-hidden="true">✕ </span>
+        <button type="button" onClick={onClose} className="btn skin-btn skin-btn-soft">
+          <span aria-hidden="true">✕</span>
           {closeLabel}
         </button>
       )}

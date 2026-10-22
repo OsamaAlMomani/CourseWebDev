@@ -1,5 +1,6 @@
 import { useCatalog } from '../context/CatalogContext'
 import Container from './Container'
+import { goToContact } from '../lib/contactLink'
 
 const support = [
   { href: '#contact', label: 'Shipping and returns' },
@@ -45,7 +46,7 @@ export default function Footer() {
           <ul>
             {support.map((s) => (
               <li key={s.label} className="mb-0.5">
-                <a href={s.href} className={linkCls}>{s.label}</a>
+                <a href={s.href} onClick={s.href === '#contact' ? goToContact : undefined} className={linkCls}>{s.label}</a>
               </li>
             ))}
           </ul>

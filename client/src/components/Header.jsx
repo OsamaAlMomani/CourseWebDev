@@ -5,6 +5,7 @@ import { authClient } from '../lib/authClient'
 import { themes } from '../data/themes'
 import Container from './Container'
 import Button from './Button'
+import { goToContact } from '../lib/contactLink'
 
 export default function Header({ route, skin, world }) {
   const { groups } = useCatalog()
@@ -65,7 +66,7 @@ export default function Header({ route, skin, world }) {
             <a
               href="#/kids"
               onClick={() => setOpen(false)}
-              className="my-1 flex min-h-11 items-center self-start rounded-full bg-sun px-4 text-[1.05rem] font-extrabold text-ink md:my-0 md:min-h-9 md:text-base"
+              className="btn skin-btn skin-btn-pop my-1 min-h-11 self-start px-4 text-[1.05rem] md:my-0 md:min-h-9 md:text-base"
             >
               🧸 Kids Corner
             </a>
@@ -134,7 +135,7 @@ export default function Header({ route, skin, world }) {
               </span>
             )}
           </button>
-          <Button href="#contact" variant="none" compact className={`rounded-full text-[0.9rem] min-[360px]:text-base ${theme.contactBtn}`}>
+          <Button href="#contact" onClick={goToContact} variant="none" compact className={`rounded-full text-[0.9rem] min-[360px]:text-base ${theme.contactBtn}`}>
             Contact
           </Button>
           <button

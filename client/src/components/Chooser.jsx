@@ -1,52 +1,54 @@
 import { useCatalog } from '../context/CatalogContext'
 import { themes } from '../data/themes'
+import { cover } from '../lib/asset'
 import Container from './Container'
-import { Bear, Die, Globe, Pencil, Atom } from './Decor'
-
-// each tile has its own little drawing, matching the page it leads to
-const art = {
-  kids: <Bear className="w-24 md:w-36" />,
-  teens: <Die className="w-24 rotate-12 md:w-36" />,
-  adults: <Globe className="w-24 text-gold/70 md:w-36" />,
-  students: <Pencil className="w-8 rotate-[35deg] md:w-12" />,
-  scientists: <Atom className="w-24 md:w-36 [&_*]:stroke-teal" />,
-}
-
-
 
 export default function Chooser() {
-  const { groups } = useCatalog()
+  const { groups, books } = useCatalog()
   // the Kids Corner has its own banner right below, so the tiles here are teens to scientists
   const general = groups.filter((g) => g.world === 'general')
   return (
     <section id="choose" className="bg-paper [background-image:radial-gradient(rgba(15,109,187,0.10)_2px,transparent_2px)] [background-size:30px_30px] py-16 md:py-28">
       <Container>
-        <h2 className="font-display text-[clamp(2.6rem,11vw,6rem)] leading-[0.92] font-extrabold tracking-[-0.045em]">
-          Find your shelf
-        </h2>
-        <p className="mt-4 mb-10 max-w-[44ch] text-xl text-muted md:mb-14 md:text-2xl">
-          From teens to scientists, pick your level and everything is sorted for you. Shopping for a child? The Kids Corner is just below.
-        </p>
+        <div className="reveal mb-10 md:mb-14">
+          <h2 className="t-section">Find your shelf</h2>
+          <p className="t-lede mt-4">
+            From teens to scientists, pick your level and everything is sorted for you. Shopping for a child? The Kids Corner is just below.
+          </p>
+        </div>
 
         <div className="grid gap-5 sm:grid-cols-2 md:gap-8 lg:grid-cols-4">
           {general.map((g) => {
             const t = themes[g.id]
+            // every tile shows two real covers from its own shelf (same look on every tile)
+            const picks = books.filter((b) => b.group === g.id).slice(0, 2)
             return (
               <a
                 key={g.id}
                 href={`#/${g.id}`}
-                className={`group relative isolate flex min-h-[260px] flex-col justify-between gap-8 overflow-hidden p-6 transition-transform duration-200 hover:-translate-y-2 md:min-h-[320px] md:p-8 ${t.heroBg} ${t.heroPattern} ${t.tileShape} ${t.font}`}
+                className={`group relative isolate flex min-h-[300px] flex-col justify-between gap-6 overflow-hidden p-6 transition-transform duration-200 hover:-translate-y-2 md:min-h-[340px] md:p-8 ${t.heroBg} ${t.heroPattern} ${t.tileShape} ${t.font}`}
               >
-                <div className="relative z-10">
-                  <h3 className={`text-[clamp(2.2rem,6.5vw,3.75rem)] leading-none font-extrabold ${t.heroHeading}`}>{g.title}</h3>
-                  <p className={`mt-3 max-w-[22ch] text-lg md:text-xl ${t.tileLine}`}>{g.homeLine}</p>
+                <div aria-hidden="true" className="flex justify-end -space-x-6 transition-transform duration-200 group-hover:rotate-3 group-hover:scale-105">
+                  {picks.map((b, i) => (
+                    <img
+                      key={b.id}
+                      src={cover(b.id)}
+                      alt=""
+                      width="200"
+                      height="270"
+                      loading="lazy"
+                      decoding="async"
+                      className={`h-auto w-20 rounded-lg shadow-[0_10px_24px_rgba(18,38,63,0.25)] md:w-24 ${i === 0 ? '-rotate-6' : 'rotate-6 translate-y-2'}`}
+                    />
+                  ))}
                 </div>
-                <span className={`relative z-10 text-lg font-bold underline decoration-2 underline-offset-4 ${t.tileCta}`}>
+                <div>
+                  <h3 className="t-title text-4xl">{g.title}</h3>
+                  <p className={`mt-2 max-w-[24ch] ${t.tileLine}`}>{g.homeLine}</p>
+                </div>
+                <span className={`text-lg font-bold underline decoration-2 underline-offset-4 ${t.tileCta}`}>
                   Enter the {g.title.toLowerCase()} shelf →
                 </span>
-                <div aria-hidden="true" className="absolute right-4 bottom-4 z-0 transition-transform duration-200 group-hover:rotate-6 group-hover:scale-110">
-                  {art[g.id]}
-                </div>
               </a>
             )
           })}

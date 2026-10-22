@@ -26,7 +26,7 @@ export default function BookCard({ book, theme }) {
 
   return (
     <article
-      className={`relative flex min-w-0 shrink-0 basis-[min(80vw,300px)] snap-start flex-col overflow-hidden transition-transform duration-200 hover:-translate-y-2 min-[360px]:basis-[min(76vw,300px)] sm:basis-auto ${theme.card}`}
+      className={`relative flex min-w-0 shrink-0 basis-[min(80vw,300px)] snap-start flex-col overflow-hidden min-[360px]:basis-[min(76vw,300px)] sm:basis-auto ${theme.card}`}
     >
       {/* heart: save for later (asks you to sign in first if you are not) */}
       <button
@@ -41,7 +41,7 @@ export default function BookCard({ book, theme }) {
         </svg>
       </button>
       {owned && (
-        <span className="absolute top-3 left-3 z-10 rounded-full bg-white/90 px-2.5 py-1 text-xs font-extrabold text-ink shadow">✓ You own this</span>
+        <span className="badge absolute top-3 left-3 z-10 bg-white/90 shadow">✓ You own this</span>
       )}
       {owned ? (
         <PurchasedBook book={book} size="fill" loop auto={false} interactive={false} />
@@ -57,10 +57,10 @@ export default function BookCard({ book, theme }) {
         />
       )}
       <div className="flex flex-1 flex-col gap-1 p-5">
-        <h3 className={`text-xl leading-[1.1] md:text-2xl ${theme.cardTitle}`}>
+        <h3 className={theme.cardTitle}>
           {book.title}
           {book.isNew && (
-            <span className={`ml-1.5 inline-block rounded-full px-2.5 py-0.5 align-middle font-sans text-xs font-bold ${theme.badge}`}>
+            <span className={`badge ml-1.5 align-middle ${theme.badge}`}>
               New
             </span>
           )}
@@ -69,18 +69,18 @@ export default function BookCard({ book, theme }) {
           {book.author} · {book.detail}
         </p>
         <p className={`mt-1 ${theme.cardBlurb}`}>{book.blurb}</p>
-        {book.stock > 0 && book.stock <= 5 && <p className="mt-1 text-sm font-bold text-[#b3363d]">Only {book.stock} left</p>}
+        {book.stock > 0 && book.stock <= 5 && <p className="mt-1 text-sm font-bold text-skin-danger">Only {book.stock} left</p>}
 
         <div className="mt-auto flex flex-col gap-3 pt-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className={`text-3xl font-extrabold ${theme.cardPrice}`}>{formatPrice(book.price)}</span>
+            <span className={`text-3xl font-extrabold tracking-tight ${theme.cardPrice}`}>{formatPrice(book.price)}</span>
             <Stepper value={copies} onChange={setCopies} label={book.title} max={Math.min(10, book.stock || 1)} className={theme.stepper} />
           </div>
           <button
             type="button"
             disabled={soldOut}
             onClick={handleAdd}
-            className={`inline-flex min-h-12 items-center justify-center px-5 text-lg font-bold transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 ${theme.order} ${added ? 'animate-pop motion-reduce:animate-none' : ''}`}
+            className={`${theme.order} min-h-12 text-lg ${added ? 'animate-pop motion-reduce:animate-none' : ''}`}
           >
             {soldOut ? 'Sold out' : added ? '✓ Added!' : copies > 1 ? `Add ${copies} to cart` : 'Add to cart'}
           </button>

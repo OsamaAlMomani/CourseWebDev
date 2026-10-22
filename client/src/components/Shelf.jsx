@@ -71,13 +71,11 @@ export default function Shelf({ group, theme, category, onCategory }) {
       id="shelf"
       className={`relative isolate overflow-hidden py-16 md:py-28 ${theme.font} ${theme.shelfBg} ${theme.shelfPattern}`}
     >
-      <Decor id={group.id} />
+      <Decor />
       <Container className="relative z-10">
         <header className="reveal mb-8 md:mb-10">
-          <h2 className={`text-[clamp(3rem,13vw,7rem)] leading-[0.92] font-extrabold ${theme.shelfHeading}`}>
-            {group.shelfTitle}
-          </h2>
-          <p className={`mt-3 max-w-[40ch] text-xl md:text-2xl ${theme.shelfNote}`}>{group.shelfNote}</p>
+          <h2 className={theme.shelfHeading}>{group.shelfTitle}</h2>
+          <p className={`mt-3 ${theme.shelfNote}`}>{group.shelfNote}</p>
         </header>
 
         <div className="mb-5 flex flex-wrap gap-3">
@@ -88,7 +86,7 @@ export default function Shelf({ group, theme, category, onCategory }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search title or author"
-              className="min-h-12 w-full rounded-full border-2 border-current/30 bg-white/90 px-5 text-lg text-ink placeholder:text-ink/50"
+              className="skin-input min-h-12 w-full rounded-full px-5 text-lg"
             />
           </label>
           <label className="block">
@@ -96,7 +94,7 @@ export default function Shelf({ group, theme, category, onCategory }) {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="min-h-12 rounded-full border-2 border-current/30 bg-white/90 px-5 text-lg text-ink"
+              className="skin-input min-h-12 rounded-full px-5 text-lg"
             >
               <option value="featured">Sort: featured</option>
               <option value="low">Price: low to high</option>
@@ -116,7 +114,7 @@ export default function Shelf({ group, theme, category, onCategory }) {
                 type="button"
                 aria-pressed={category === c.id}
                 onClick={() => onCategory(c.id)}
-                className={`min-h-11 rounded-full border-2 px-5 text-base font-bold transition hover:-translate-y-0.5 ${category === c.id ? theme.filterOn : theme.filterOff}`}
+                className="chip"
               >
                 {c.icon && <span aria-hidden="true" className="mr-1.5">{c.icon}</span>}
                 {c.label}
@@ -136,7 +134,7 @@ export default function Shelf({ group, theme, category, onCategory }) {
         />
 
         {result.status === 'error' ? (
-          <p role="alert" className={`py-6 text-xl ${theme.shelfNote}`}>We couldn’t load the books. Please refresh in a moment.</p>
+          <p role="alert" className={`py-6 ${theme.shelfNote}`}>We couldn’t load the books. Please refresh in a moment.</p>
         ) : result.status === 'loading' && visible.length === 0 ? (
           // grey placeholder cards in this shelf's own card style, so the page doesn't jump when the books arrive
           <div role="status" aria-label="Loading books" className="grid gap-5 sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))] md:gap-8">
@@ -153,11 +151,11 @@ export default function Shelf({ group, theme, category, onCategory }) {
           </div>
         ) : visible.length === 0 ? (
           <div className="grid justify-items-start gap-4 py-6">
-            <p className={`text-xl md:text-2xl ${theme.shelfNote}`}>
+            <p className={theme.shelfNote}>
               <span aria-hidden="true" className="mr-2">{voice.icon}</span>
               {voice.noResults}
             </p>
-            <button type="button" onClick={clearAll} className={`inline-flex min-h-12 items-center px-6 text-lg font-bold ${theme.order}`}>
+            <button type="button" onClick={clearAll} className={theme.order}>
               {voice.clear}
             </button>
           </div>

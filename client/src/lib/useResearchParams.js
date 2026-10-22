@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from 'react'
 //   #/scientists?type=paper                        type:    news | paper | book   (same idea, by content type)
 //   #/scientists?q=attention                       q: opens the search with this text
 // (The site's router is hash-based, so the "?..." lives after the #/scientists part.)
-export const SECTIONS = ['news', 'research', 'books']
+const SECTIONS = ['news', 'research', 'books']
 export const LEVELS = ['beginner', 'intermediate', 'advanced']
-export const TYPES = ['news', 'paper', 'book']
+const TYPES = ['news', 'paper', 'book']
 const TYPE_TO_SECTION = { news: 'news', paper: 'research', book: 'books' }
 const BASE = '#/scientists'
 

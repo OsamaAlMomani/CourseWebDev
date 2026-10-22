@@ -95,7 +95,7 @@ export default function AccountPage() {
       <section className="grid min-h-[60vh] place-items-center bg-skin-bg py-20 text-center text-skin-ink">
         <Container className="grid justify-items-center gap-4">
           <p className="animate-hop text-6xl motion-reduce:animate-none" aria-hidden="true">{voice.icon}</p>
-          <h1 className="font-skin text-5xl font-extrabold tracking-[-0.03em]">Your account</h1>
+          <h1 className="t-display">Your account</h1>
           <p className="text-xl">Please sign in to see your wishlist and orders.</p>
           <Button as="button" type="button" variant="skin" large onClick={() => openAuth('signin')}>Sign in</Button>
         </Container>
@@ -111,7 +111,7 @@ export default function AccountPage() {
       <Container className="grid gap-8">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-skin text-[clamp(2.2rem,7vw,4.5rem)] leading-[0.95] font-extrabold tracking-[-0.04em]">{voice.greeting(user.name)}</h1>
+            <h1 className="t-display">{voice.greeting(user.name)}</h1>
             <p className="mt-2 text-lg text-skin-muted">{user.email}</p>
           </div>
           <button
@@ -165,7 +165,7 @@ export default function AccountPage() {
               <h2 className="mb-3 font-skin text-2xl font-extrabold">Keep shopping</h2>
               <div className="flex flex-wrap gap-3">
                 <a href="#/" className="skin-btn inline-flex min-h-12 items-center px-6 text-lg font-bold">Main shop</a>
-                <a href="#/kids" className="inline-flex min-h-12 items-center rounded-full bg-sun px-6 text-lg font-extrabold text-ink transition hover:-translate-y-0.5">🧸 Kids Corner</a>
+                <a href="#/kids" className="btn skin-btn skin-btn-pop">🧸 Kids Corner</a>
               </div>
             </div>
           </div>
