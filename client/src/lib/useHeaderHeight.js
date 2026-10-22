@@ -6,7 +6,7 @@ const useIsomorphicLayoutEffect =
 /**
  * Measures the header and writes the LARGEST height it reaches to --header-h on
  * <html>. Anchor jumps therefore land safely below the header in every state:
- * subtabs visible, subtabs collapsed, safe-area inset, web-font reflow, "Kids"
+ * bar visible, bar collapsed, safe-area inset, web-font reflow, "Kids"
  * badge wrapping. Uses max (not current) so we write to the DOM at most once
  * per distinct height and never fight the row transition.
  */

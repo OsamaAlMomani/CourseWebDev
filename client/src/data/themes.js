@@ -1,16 +1,18 @@
 // How the pages look. Every reader group now shares ONE light theme (sky blue, light red, white cards),
 // so the whole site feels like the same shop. To change the look of everything, edit `light` below
-// (colours and the type scale live in src/index.css: @theme and section 8b).
+// (colours live in src/styles/tokens.css, the type scale in src/styles/typography.css).
 // Class names are written out in full so Tailwind can find them.
 
+// Colours here follow the active theme: `bg-skin-*`, `bg-ink-soft`, `bg-paper` are variables that change in the Night theme
+// (src/styles/theme-night.css). A few gradients carry an explicit `dark:` version because they use fixed pastel colours.
 const light = {
   // one font setup for every section: body text in DM Sans (inherited), headings use the .t-* classes (Bricolage Grotesque)
   font: 'font-body',
-  header: 'bg-white/90 text-ink border-b border-line backdrop-blur',
-  navBg: 'bg-white',
+  header: 'bg-skin-surface/90 text-ink border-b border-line backdrop-blur',
+  navBg: 'bg-skin-surface',
   navLink: 'text-ink md:text-ink/75 md:hover:text-blue',
   logoAccent: 'text-blue',
-  contactBtn: 'bg-blue text-white',
+  contactBtn: 'bg-skin-accent text-white',
   closeLink: 'text-blue',
   pill: 'btn skin-btn skin-btn-soft',
 
@@ -18,10 +20,10 @@ const light = {
   heroVideo: 'video/hero.mp4',
   heroPoster: 'video/hero-poster.jpg',
   heroVideoCls: 'opacity-70',
-  videoBtn: 'bg-ink/70 text-white',
+  videoBtn: 'bg-ink/70 text-paper',
   // light wash so the dark text stays readable, but thin enough that the video really shows through
-  heroShade: 'bg-linear-to-b from-white/75 to-[#dff1ff]/50 lg:bg-linear-to-r lg:from-white/90 lg:via-[#e8f4ff]/55 lg:to-[#dff1ff]/25',
-  heroBg: 'bg-linear-to-br from-[#dff1ff] to-[#ffe9e6] text-ink',
+  heroShade: 'bg-linear-to-b from-skin-surface/75 to-[#dff1ff]/50 lg:bg-linear-to-r lg:from-skin-surface/90 lg:via-[#e8f4ff]/55 lg:to-[#dff1ff]/25 dark:to-[#0f2036]/60 dark:lg:via-[#0f2036]/60 dark:lg:to-[#0f2036]/30',
+  heroBg: 'bg-linear-to-br from-[#dff1ff] to-[#ffe9e6] text-ink dark:from-[#0f2036] dark:to-[#2a1a22]',
   heroPattern: '[background-image:radial-gradient(rgba(15,109,187,0.10)_2px,transparent_2px)] [background-size:28px_28px]',
   heroHeading: 't-display',
   accent: 'text-blue',
@@ -31,7 +33,7 @@ const light = {
   coverCls: 'rounded-xl shadow-[0_18px_36px_rgba(18,38,63,0.20)]',
   fanAnim: 'animate-float motion-reduce:animate-none',
 
-  pointsBg: 'bg-[#e3f2ff] text-ink',
+  pointsBg: 'bg-ink-soft text-ink',
   pointTitle: 't-title',
   pointText: 't-body',
 
@@ -49,7 +51,7 @@ const light = {
   cardPrice: 'font-display text-blue',
   order: 'btn skin-btn',
   badge: 'bg-coral text-ink',
-  stepper: 'border-line bg-[#e3f2ff] text-ink',
+  stepper: 'border-line bg-ink-soft text-ink',
 
   tileShape: 'skin-card',
   tileLine: 't-body',

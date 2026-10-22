@@ -5,6 +5,9 @@ import { authClient } from '../lib/authClient'
 // Everything about "me as a shopper": who is signed in, my cart, my wishlist, and the pop-ups (sign-in dialog, cart drawer, toast).
 // Components call small actions like addToCart(book) and never worry about fetch or sign-in checks.
 const ShopContext = createContext(null)
+// The toast text lives in its OWN context. It changes twice per message, and when it lived in ShopContext
+// every book card, the header and the drawer re-rendered each time.
+const NoticeContext = createContext({ notice: '', noticeTone: 'ok' })
 const emptyCart = { items: [], total: 0 }
 
 export function ShopProvider({ children }) {
@@ -84,8 +87,6 @@ export function ShopProvider({ children }) {
       closeAuth: () => setAuthMode(null),
       cartOpen,
       setCartOpen,
-      notice,
-      noticeTone,
       notify,
 
       cart,
@@ -123,10 +124,17 @@ export function ShopProvider({ children }) {
         }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, sessionLoading, authMode, cartOpen, notice, noticeTone, cart, wishlist, purchased],
+    [user, sessionLoading, authMode, cartOpen, cart, wishlist, purchased],
   )
+  const noticeValue = useMemo(() => ({ notice, noticeTone }), [notice, noticeTone])
 
-  return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>
+  return (
+    <ShopContext.Provider value={value}>
+      <NoticeContext.Provider value={noticeValue}>{children}</NoticeContext.Provider>
+    </ShopContext.Provider>
+  )
 }
+
+export const useNotice = () => useContext(NoticeContext)
 
 export const useShop = () => useContext(ShopContext)

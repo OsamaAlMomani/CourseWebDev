@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 
 // The selected section of a shelf (Bedtime, Fiction, Study guides...) lives in the address bar:
 //   #/teens?cat=fiction        no ?cat= means "Everything"
-// Why there and not in useState? Two far-apart components need it: the subtabs in the Header and the shelf below.
+// Why there and not in useState? Two far-apart components need it: the section drop-down in the Header and the shelf below.
 // The address bar is the one place both can read, and it makes every filtered view bookmarkable and shareable.
 // (The router in useRoute.js already ignores everything after "?", so pages do not change.)
 const EVENT = 'gb-category'

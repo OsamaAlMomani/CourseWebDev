@@ -1,20 +1,26 @@
 import { useEffect } from 'react'
 import { isScrollLocked } from './useCategory'
 
-const STATES = ['none', 'subtabs', 'tabs']
+const STATES = ['none', 'tabs']
 const TOP_ZONE = 80   // below this scrollY we always show everything
 const STEP = 6        // px of net movement needed to advance a step
 
 /**
  * Drives `data-tuck` on the header element directly. No React state, no
  * re-render — so scrolling never re-renders the cart badge, nav, or either
- * SlidingTabs. The CSS in index.css does all the work.
+ * the Shelf bar. The CSS in layout/Header/Header.css does all the work.
+ *
+ * `pinned` = the visitor pinned the menu: nothing is ever tucked away, every row stays visible.
  */
-export function useHeaderScroll(headerRef) {
+export function useHeaderScroll(headerRef, pinned = false) {
   useEffect(() => {
     const el = headerRef.current
     if (!el) return
     if (!el.dataset.tuck) el.dataset.tuck = 'none'
+    if (pinned) {
+      el.dataset.tuck = 'none'
+      return // no scroll listener at all while pinned
+    }
 
     let last = window.scrollY
     let raf = 0
@@ -57,5 +63,5 @@ export function useHeaderScroll(headerRef) {
       cancelAnimationFrame(raf)
       window.removeEventListener('scroll', onScroll)
     }
-  }, [headerRef])
+  }, [headerRef, pinned])
 }
