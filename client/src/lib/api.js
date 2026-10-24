@@ -6,7 +6,7 @@
 //   - in development, Vite forwards /api to the Express server (see vite.config.js)
 //   - in production, Vercel forwards /api to Railway (see vercel.json)
 // Because the browser only ever talks to one address, the login cookie is a normal first-party cookie.
-export const API_BASE = import.meta.env.VITE_API_URL ?? ''
+export const API_BASE = '' // always same-origin: the host rewrites /api/* to the server
 
 export async function api(path, { method = 'GET', body, signal } = {}) {
   const res = await fetch(`${API_BASE}/api${path}`, {
