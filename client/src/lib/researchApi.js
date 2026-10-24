@@ -1,4 +1,4 @@
-import { api, API_BASE } from './api'
+import { api, API_BASE, authHeader } from './api'
 
 // All requests of the Research & Book page. Filtering and searching happen on the server (level goes in the query string).
 const qs = (obj) => {
@@ -20,7 +20,7 @@ export async function placeOrder({ name, email, address, items }) {
     const res = await fetch(`${API_BASE}/api/research/orders`, {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'x-csrf-token': token },
+      headers: { 'Content-Type': 'application/json', 'x-csrf-token': token, ...authHeader() },
       body: JSON.stringify({ name, email, address, items }), // only ids + quantities: the server looks up the prices
     })
     const data = await res.json().catch(() => null)

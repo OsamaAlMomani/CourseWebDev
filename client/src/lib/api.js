@@ -6,14 +6,24 @@
 //   - in development, Vite forwards /api to the Express server (see vite.config.js)
 //   - in production, Vercel forwards /api to Railway (see vercel.json)
 // Because the browser only ever talks to one address, the login cookie is a normal first-party cookie.
-export const API_BASE = '' // always same-origin: the host rewrites /api/* to the server
+export const API_BASE = import.meta.env.VITE_API_URL || 'https://book-store-db-o3h2.onrender.com'
+
+// The login token is kept by authClient.js; send it so the server knows who we are (cookies don't cross sites).
+export const authHeader = () => {
+  try {
+    const t = localStorage.getItem('gb_token')
+    return t ? { Authorization: `Bearer ${t}` } : {}
+  } catch {
+    return {}
+  }
+}
 
 export async function api(path, { method = 'GET', body, signal } = {}) {
   const res = await fetch(`${API_BASE}/api${path}`, {
     method,
     signal,
     credentials: 'include', // send the session cookie along
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...authHeader() },
     body: body ? JSON.stringify(body) : undefined,
   })
   const data = await res.json().catch(() => null)
