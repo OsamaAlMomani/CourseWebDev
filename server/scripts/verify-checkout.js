@@ -240,7 +240,9 @@ try {
   check(restored.rows[0].stock === originalStock - 2, 'expired order returned its copies to stock')
 
   // A cancelled order can never be marked paid by a late webhook, and a paid one is never cancelled.
-  const late = await hook({ ...expiredEvent, id: `evt_verify_${randomUUID()}`, data: { object: { ...expiredEvent.data.object, id: `cs_test_verify_${sessionCounter}` } } })
+  const lateEvent = { ...expiredEvent, id: `evt_verify_${randomUUID()}`, data: { object: { ...expiredEvent.data.object, id: `cs_test_verify_${sessionCounter}` } } }
+  eventIds.push(lateEvent.id)
+  const late = await hook(lateEvent)
   check(late.res.status === 200, 'late duplicate-type event is acknowledged')
   const stillCancelled = await call(`/orders/${secondId}`, { token: token2 })
   check(stillCancelled.data.status === 'cancelled', 'a cancelled order stays cancelled')
@@ -255,7 +257,7 @@ try {
     if (book) await DB.query('update books set stock = $2 where id = $1', [book.id, originalStock])
     await DB.query('delete from "user" where email = $1', [email])
     if (eventIds.length) await DB.query('delete from stripe_events where id = any($1)', [eventIds])
-    await DB.query("delete from stripe_events where type like 'checkout.session.%' and order_id is null and received_at > now() - interval '10 minutes'")
+    await DB.query("delete from stripe_events where id like 'evt_verify_%'")
   } catch (cleanupError) {
     console.error('Cleanup warning:', cleanupError.message)
   }

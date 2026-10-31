@@ -61,7 +61,12 @@ export default function OrderSuccessPage({ orderId }) {
       } catch (err) {
         if (!alive) return
         setChecking(false)
-        if (err.status !== 401) setError(err.message)
+        if (err.status === 401) {
+          setError('Your session expired. Please sign in again to see this order.')
+          openAuth('signin')
+        } else {
+          setError(err.message)
+        }
       }
     }
 

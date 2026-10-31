@@ -1,0 +1,168 @@
+GLOBALBOOKS — FINISH THE STRIPE SETUP (10 minutes, done once)
+=============================================================
+
+Everything is coded, deployed and tested. The ONLY thing left is putting your
+Stripe TEST keys into Render. Until you do, the shop works normally but the
+payment button says payments are not switched on yet.
+
+Live site:  https://course-web-dev.vercel.app
+Live API:   https://book-store-db-o3h2.onrender.com
+
+You need two values:
+  STRIPE_SECRET_KEY       starts with sk_test_
+  STRIPE_WEBHOOK_SECRET   starts with whsec_
+
+------------------------------------------------------------------------------
+STEP 1 — Create a Stripe account (skip if you already have one)
+------------------------------------------------------------------------------
+1. Open https://dashboard.stripe.com/register
+2. Sign up with your email, confirm the email.
+3. In the dashboard, find the "Test mode" switch (top right) and turn it ON.
+   Test mode must be ON for every step below.
+
+------------------------------------------------------------------------------
+STEP 2 — Copy the test Secret key
+------------------------------------------------------------------------------
+1. In Stripe: Developers -> API keys  (direct link: https://dashboard.stripe.com/test/apikeys)
+2. Make sure the page says "Test mode".
+3. Under "Secret key", click "Reveal test key" and copy it (sk_test_...).
+   Do NOT use the "Publishable key" (pk_test_...) and do NOT use a live key.
+
+------------------------------------------------------------------------------
+STEP 3 — Add the key to Render (the live API)
+------------------------------------------------------------------------------
+1. Open https://dashboard.render.com
+2. Click the Web Service named "book-store-db-o3h2" (the API).
+3. Left menu -> "Environment".
+4. "Add Environment Variable":
+       Key:   STRIPE_SECRET_KEY
+       Value: sk_test_...        (paste the key from step 2)
+   Add a second one (you get the value in step 5, you can come back):
+       Key:   STRIPE_WEBHOOK_SECRET
+       Value: whsec_...
+5. Click "Save Changes". Render redeploys automatically (or use
+   "Manual Deploy" -> "Deploy latest commit").
+
+CHECK: open https://book-store-db-o3h2.onrender.com/api/health
+       It must show "payments":true
+       (Before the key it shows "payments":false.)
+
+------------------------------------------------------------------------------
+STEP 4 — Create the webhook endpoint in Stripe
+------------------------------------------------------------------------------
+This is what tells the shop that a payment really succeeded. Without it the
+order stays "pending" forever.
+
+1. In Stripe: Developers -> Webhooks -> "Add endpoint"
+   (direct link: https://dashboard.stripe.com/test/webhooks)
+2. Endpoint URL:
+       https://book-store-db-o3h2.onrender.com/api/stripe/webhook
+3. "Select events" -> add exactly these five:
+       checkout.session.completed
+       checkout.session.async_payment_succeeded
+       checkout.session.async_payment_failed
+       checkout.session.expired
+       charge.refunded
+4. Click "Add endpoint".
+5. On the endpoint page, under "Signing secret", click "Reveal" and copy
+   the value (whsec_...).
+
+------------------------------------------------------------------------------
+STEP 5 — Add the webhook secret to Render
+------------------------------------------------------------------------------
+1. Render -> book-store-db-o3h2 -> Environment.
+2. Add (or edit):
+       Key:   STRIPE_WEBHOOK_SECRET
+       Value: whsec_...          (from step 4.5)
+3. Save Changes and wait for the redeploy.
+
+------------------------------------------------------------------------------
+STEP 6 — Test a real (fake-money) payment on the live site
+------------------------------------------------------------------------------
+1. Open https://course-web-dev.vercel.app
+2. Sign in or create an account.
+3. Open any shelf (e.g. Kids), click "Buy now" on a book
+   (or Add to cart -> Checkout -> fill name/address/country).
+4. You are sent to Stripe's hosted Checkout page.
+5. Pay with:
+       Card number:  4242 4242 4242 4242
+       Expiry:       any FUTURE date (e.g. 12/34)
+       CVC:          any 3 digits (e.g. 123)
+       Name/country: anything
+6. Stripe sends you back to  https://course-web-dev.vercel.app/#/order/<id>
+   The page first says "Confirming your payment" and then
+   "Payment received" with the order number, items and total.
+7. My account -> Orders also shows the order as "Paid".
+
+If step 6 stays on "Confirming your payment":
+   Stripe -> Developers -> Webhooks -> your endpoint -> "Attempts" tab.
+   - 400 = STRIPE_WEBHOOK_SECRET on Render is wrong (copy it again).
+   - 503 = the secret is missing on Render.
+   - no attempts = the endpoint URL or the selected events are wrong.
+You can also resend the event from that page.
+
+------------------------------------------------------------------------------
+OPTIONAL — Test locally before/after
+------------------------------------------------------------------------------
+A) Without any Stripe account (already works):
+
+       cd server
+       npm run verify:checkout
+
+   This starts a fake Stripe locally and proves: sign-up, cart, checkout,
+   signed webhook -> paid, duplicate webhook, forged signature rejected,
+   expired session -> stock returned. It cleans up after itself.
+
+B) With your test key, against your local server:
+
+       cd server
+       # put STRIPE_SECRET_KEY=sk_test_... in server/.env
+       npm run dev
+
+   In a second terminal (install once: https://docs.stripe.com/stripe-cli):
+
+       stripe login
+       stripe listen --forward-to localhost:4000/api/stripe/webhook
+
+   The CLI prints a whsec_...; put it in server/.env as
+   STRIPE_WEBHOOK_SECRET=whsec_... and restart the server.
+   Then pay on http://localhost:5173 with 4242 4242 4242 4242.
+
+------------------------------------------------------------------------------
+WHAT TO SHOW AT ASSESSMENT
+------------------------------------------------------------------------------
+1. The live URL, signed in.
+2. Click "Buy now" -> Stripe page -> pay 4242 4242 4242 4242.
+3. Land on "#/order/<id>" that says "Payment received".
+4. My account -> Orders shows "Paid".
+5. Explain the orders table (public.orders):
+      id, user_id, total_cents, currency, status, ship_*, customer_email,
+      stripe_checkout_session_id, stripe_payment_intent_id, paid_at, ...
+   and order_items (book_id, title, unit_price_cents, quantity = snapshot).
+6. Explain that only the signature-checked webhook sets status='paid'
+   (server/src/routes/stripeWebhook.js -> payments.js markPaid). The success
+   page only reads GET /api/orders/:id and cannot mark anything paid.
+7. Optional: show stripe_events, which makes retries idempotent.
+
+------------------------------------------------------------------------------
+SECURITY NOTES
+------------------------------------------------------------------------------
+- Test keys only (sk_test_..., whsec_...). No real money moves.
+- Never commit server/.env. It is git-ignored.
+- When you eventually go live: create NEW live keys and a NEW live webhook,
+  and replace the two Render variables. The code does not change.
+- Do not put the secret key in any client/ file or in Vercel.
+  Vercel only runs the browser code.
+
+------------------------------------------------------------------------------
+TROUBLESHOOTING QUICK TABLE
+------------------------------------------------------------------------------
+Checkout says "not switched on yet"  -> STRIPE_SECRET_KEY missing/bad on Render.
+health still payments:false          -> Render did not redeploy; Manual Deploy.
+Order stays pending                  -> webhook missing / wrong URL / wrong
+                                        STRIPE_WEBHOOK_SECRET.
+Webhook 400                          -> signing secret mismatch.
+Webhook 503                          -> signing secret missing on Render.
+First request takes 30-60 seconds    -> Render free service was asleep. Normal.
+A cancelled test still holds stock   -> Stripe expires the session after 1 hour;
+                                        the webhook then returns the copies.

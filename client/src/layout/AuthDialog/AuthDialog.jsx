@@ -82,7 +82,7 @@ export default function AuthDialog() {
     >
       {/* a stripe of the shelf's colours along the top */}
       <div aria-hidden="true" className="h-3 bg-skin-pop" />
-      <form onSubmit={handleSubmit} className="grid gap-4 p-6 sm:p-8" noValidate={false}>
+      <form onSubmit={handleSubmit} className="grid gap-4 p-6 sm:p-8">
         <p className="text-5xl" aria-hidden="true">{icon}</p>
         <h2 id="auth-title" className="font-skin text-4xl font-extrabold tracking-[-0.03em]">
           {signup ? 'Create your account' : 'Welcome back'}

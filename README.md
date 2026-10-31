@@ -4,6 +4,9 @@ An online bookstore for every kind of reader, with shelves for kids, teens, stud
 
 Built for the CourseWebDev course (Assignment 3): React + Vite + Tailwind on the front end, an Express + Postgres JSON API on the back end.
 
+> **Before the assessment:** the live shop is deployed, but the Stripe test keys still have to be pasted into Render.
+> Follow **[PAYMENTS-SETUP.txt](PAYMENTS-SETUP.txt)** (10 minutes, exact clicks). Everything else is done and tested.
+
 ---
 
 ## Features
@@ -200,7 +203,7 @@ Full folder guide: `src/STRUCTURE.md`. Every CSS file starts with a header that 
 
 The live shop is **<https://course-web-dev.vercel.app>** and the live API is **<https://book-store-db-o3h2.onrender.com>**. Both are connected to this GitHub repository and redeploy on a push to `main`.
 
-1. **Back end on Render.** Root directory `server/`, start command `npm start`. Environment: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CLIENT_ORIGINS`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. Then run `npm run db:migrate` once against the production database (`npm run db:setup` on a new one).
+1. **Back end on Render.** Root directory `server/`, start command `npm start`. Environment: `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CLIENT_ORIGINS`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`. Then run `npm run db:migrate` once against the production database (`npm run db:setup` on a new one). The Stripe part is spelled out click-by-click in **[PAYMENTS-SETUP.txt](PAYMENTS-SETUP.txt)**.
 2. **Front end on Vercel.** Root directory `client/`, build `npm run build`, output `dist`. `client/src/lib/api.js` calls the Render API; set `VITE_API_URL` in Vercel only if that address ever changes.
 3. **Stripe webhook.** Dashboard → Developers → Webhooks → add `https://<render-domain>/api/stripe/webhook`, choose `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired` and `charge.refunded`, then copy its signing secret to Render as `STRIPE_WEBHOOK_SECRET`.
 4. **Check on the live URL:** books load, sign up, refresh (still signed in), Buy now, pay with the test card, land on a success page that says **Payment received**.
