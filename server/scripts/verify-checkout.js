@@ -17,11 +17,18 @@ import { randomUUID } from 'node:crypto'
 
 // ---------------------------------------------------------------- fake Stripe
 let sessionCounter = 0
+let failSessions = 0
 const fakeStripe = http.createServer((req, res) => {
   let body = ''
   req.on('data', (chunk) => (body += chunk))
   req.on('end', () => {
     if (req.method === 'POST' && req.url.includes('/checkout/sessions')) {
+      if (failSessions > 0) {
+        failSessions -= 1
+        res.writeHead(500, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: { type: 'api_error', message: 'fake Stripe outage' } }))
+        return
+      }
       const form = new URLSearchParams(body)
       const id = `cs_test_verify_${++sessionCounter}`
       res.writeHead(200, { 'Content-Type': 'application/json' })
@@ -246,6 +253,26 @@ try {
   check(late.res.status === 200, 'late duplicate-type event is acknowledged')
   const stillCancelled = await call(`/orders/${secondId}`, { token: token2 })
   check(stillCancelled.data.status === 'cancelled', 'a cancelled order stays cancelled')
+
+  // 9. If Stripe itself is down, checkout fails cleanly: the order is 'failed' and its stock is back.
+  await call('/cart', { method: 'POST', token: token2, body: { bookId: book.id, quantity: 1 } })
+  const beforeFailure = await DB.query('select stock from books where id = $1', [book.id])
+  failSessions = 5 // more than the SDK's 2 automatic retries, so the outage is persistent for this test
+  const failedCheckout = await call('/checkout/cart', {
+    method: 'POST',
+    token: token2,
+    body: { name: 'Verification Shopper', address: 'Teststrasse 1, Berlin', country: 'DE' },
+  })
+  check(failedCheckout.res.status === 502, 'a Stripe outage answers 502', `got ${failedCheckout.res.status}`)
+  const failedOrder = await DB.query(
+    `select o.id, o.status, o.stock_reserved from orders o
+      where o.user_id = (select id from "user" where email = $1) order by o.id desc limit 1`,
+    [email],
+  )
+  check(failedOrder.rows[0]?.status === 'failed', 'the order is marked failed')
+  check(failedOrder.rows[0]?.stock_reserved === false, 'the failed order released its reservation')
+  const afterFailure = await DB.query('select stock from books where id = $1', [book.id])
+  check(afterFailure.rows[0].stock === beforeFailure.rows[0].stock, 'the failed order returned its copy')
 
   console.log(`\nAll ${passed} checks passed.\n`)
 } catch (err) {

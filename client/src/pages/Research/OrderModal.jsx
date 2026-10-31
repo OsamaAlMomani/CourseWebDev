@@ -73,10 +73,10 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
   // ------------------------------------------------------------ after the order
   if (receipt) {
     return (
-      <Modal label="Order placed" onClose={onClose} className="md:max-w-xl">
-        <DialogBar title="Order placed" onClose={onClose} />
+      <Modal label="Order request sent" onClose={onClose} className="md:max-w-xl">
+        <DialogBar title="Order request sent" onClose={onClose} />
         <div className="grid gap-4 p-5 md:p-8">
-          <h3 className="t-title md:text-4xl">Thank you! Order #{receipt.id} is in.</h3>
+          <h3 className="t-title md:text-4xl">Thank you! Order request #{receipt.id} is in.</h3>
           <ul className="overflow-hidden rounded-2xl border border-line bg-skin-surface">
             {receipt.items.map((i) => (
               <li key={i.title} className="t-body flex justify-between gap-3 border-b border-line p-3 last:border-b-0">
@@ -91,7 +91,7 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
               <span>{money(receipt.total)}</span>
             </li>
           </ul>
-          <p className="t-body">We will send the details to the email address you entered.</p>
+          <p className="t-body">We will email you a payment link and the delivery details.</p>
           <button type="button" onClick={onClose} className="btn skin-btn skin-btn-pop w-fit">
             Back to the page
           </button>
@@ -189,6 +189,7 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
             </ul>
           )}
           <p className="t-meta">Prices and stock are confirmed by our server when you order.</p>
+          <p className="t-meta">This sends a request to our book desk; no card payment is taken on this page.</p>
 
           <div>
             <label htmlFor="ow-name" className={label}>
@@ -215,7 +216,7 @@ export default function OrderModal({ cart, setCart, initialSearch = '', onClose 
             </p>
           )}
           <button type="submit" disabled={!lines.length || state.status === 'sending'} className="btn btn-lg skin-btn w-full">
-            {state.status === 'sending' ? 'Placing order…' : `Place order · ${money(total)}`}
+            {state.status === 'sending' ? 'Sending request…' : `Send order request · ${money(total)}`}
           </button>
         </form>
       </div>
