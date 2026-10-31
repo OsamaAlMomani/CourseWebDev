@@ -69,9 +69,15 @@ BETTER_AUTH_SECRET=${randomBytes(32).toString('hex')}
 BETTER_AUTH_URL=http://localhost:5173
 CLIENT_ORIGINS=http://localhost:5173
 PORT=4000
+
+# Stripe TEST mode (optional to start, required for checkout). See docs/STRIPE.md
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_CURRENCY=usd
 `,
 )
 console.log('server/.env written (it is git-ignored, never commit it).')
+console.log('Add your Stripe test keys to it when you are ready to take payments; until then checkout says "not set up".')
 
 // 5) tables + books
 console.log('\nCreating tables and loading books ...\n')

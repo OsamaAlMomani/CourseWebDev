@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useCatalog } from '../../context/CatalogContext'
 import { useShop } from '../../context/ShopContext'
-import { authClient } from '../../lib/authClient'
 import { themes, voices } from '../../data/themes'
 import Container from '../../shared/Container'
 import Button from '../../shared/Button'
@@ -14,7 +13,7 @@ import useTheme, { toggleTheme } from '../../lib/theme'
 
 export default function Header({ route, skin, world }) {
   const { groups, books } = useCatalog()
-  const { user, openAuth, setCartOpen, cartCount, notify } = useShop()
+  const { user, openAuth, setCartOpen, cartCount, notify, signOut } = useShop()
   const [open, setOpen] = useState(false)
   const dark = useTheme() === 'dark'
   const headerRef = useRef(null)
@@ -178,7 +177,7 @@ export default function Header({ route, skin, world }) {
                   type="button"
                   onClick={async () => {
                     setOpen(false)
-                    await authClient.signOut()
+                    await signOut()
                     notify('You are signed out.')
                     if (route === 'account') window.location.hash = '#/'
                   }}

@@ -17,7 +17,7 @@ Two ways to use this file:
 | Node.js 20 or newer (nodejs.org, LTS) | runs the server and the build | `node -v` |
 | Git | version control | `git --version` |
 | VS Code + the recommended extensions | editor (VS Code offers them when you open the folder) | – |
-| Free accounts: GitHub, Neon, Railway, Vercel | repo, database, backend hosting, frontend hosting | – |
+| Free accounts: GitHub, Neon, Render, Vercel | repo, database, backend hosting, frontend hosting | – |
 
 Open the terminal inside VS Code with **Ctrl + `** (Mac: **Cmd + `**).
 
@@ -215,7 +215,7 @@ Use the **Source Control** panel (left sidebar, branch icon) if you prefer click
 
 ### Step 14: deploy
 
-Follow section 7 of `docs/BACKEND.md` (Railway for `server/`, Vercel for `client/`, edit `client/vercel.json`, set `BETTER_AUTH_URL`).
+Follow section 7 of `docs/BACKEND.md` (Render for `server/`, Vercel for `client/`, set `BETTER_AUTH_URL`, then add the Stripe test keys and webhook from `docs/STRIPE.md`).
 Checkpoint on the **live URL**: sign up, refresh, add to cart, checkout.
 
 ---
@@ -231,7 +231,9 @@ Checkpoint on the **live URL**: sign up, refresh, add to cart, checkout.
 | `EADDRINUSE :4000` | An old server is still running. Close that terminal (trash icon) and start again. |
 | Site says "We couldn't reach the shop" | Server not running, or the proxy target is wrong. Open `localhost:4000/api/health`. |
 | Sign-up returns "Invalid origin" | `BETTER_AUTH_URL` / `CLIENT_ORIGINS` must equal the address in the browser bar (dev: `http://localhost:5173`). Restart the server after editing `.env`. |
-| Sign-in works but a refresh logs you out | The API is being called on another domain. Use the `/api` proxy (dev) or the `vercel.json` rewrite (production). |
+| Sign-in works but a refresh logs you out | The browser did not keep the bearer token. Check that `localStorage.gb_token` exists and that CORS exposes `set-auth-token` (see `server/src/app.js`). |
+| Checkout says "not set up" | `STRIPE_SECRET_KEY` is missing on the server (see `docs/STRIPE.md`). |
+| Paid on Stripe but order stays pending | The webhook did not reach `/api/stripe/webhook`, or `STRIPE_WEBHOOK_SECRET` is wrong. |
 | Live site: first load takes seconds | Neon free database was asleep. Normal. |
 | `401` on cart | You are signed out. The UI opens the sign-in dialog for you. |
 
@@ -250,6 +252,6 @@ Tools:
 
 ## Security habits
 
-- Production gets its **own** `BETTER_AUTH_SECRET` (set in Railway, never in a file).
+- Production gets its **own** `BETTER_AUTH_SECRET` (set in Render, never in a file).
 - If a secret is ever committed, **rotate it** (new Neon password, new secret). Deleting the file does not remove it from git history.
 - Never put a `userId` in a request body to identify the user; the server reads it from the session.

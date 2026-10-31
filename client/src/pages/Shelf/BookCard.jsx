@@ -6,7 +6,7 @@ import Stepper from '../../shared/Stepper'
 import PurchasedBook from '../../shared/PurchasedBook/PurchasedBook'
 
 export default function BookCard({ book, theme }) {
-  const { addToCart, toggleWishlist, isSaved, isPurchased } = useShop()
+  const { addToCart, buyNow, toggleWishlist, isSaved, isPurchased } = useShop()
   const saved = isSaved(book.id)
   // a book this person has bought before: its cover keeps flipping (maths in lib/bookMotion.js)
   const owned = isPurchased(book.id)
@@ -15,6 +15,7 @@ export default function BookCard({ book, theme }) {
   const [copies, setCopies] = useState(1)
   // true for a moment after adding, so the button can say "Added!" and the book feels like it landed
   const [added, setAdded] = useState(false)
+  const [paying, setPaying] = useState(false)
 
   async function handleAdd() {
     const ok = await addToCart(book, copies)
@@ -22,6 +23,14 @@ export default function BookCard({ book, theme }) {
       setAdded(true)
       window.setTimeout(() => setAdded(false), 1500)
     }
+  }
+
+  // Straight to Stripe with just this book. The address is collected on Stripe's secure page.
+  async function handleBuyNow() {
+    if (paying) return
+    setPaying(true)
+    const started = await buyNow(book, copies)
+    if (!started) setPaying(false) // signed out or the server refused; the dialog/toast explains
   }
 
   return (
@@ -83,6 +92,15 @@ export default function BookCard({ book, theme }) {
             className={`${theme.order} min-h-12 text-lg ${added ? 'animate-pop motion-reduce:animate-none' : ''}`}
           >
             {soldOut ? 'Sold out' : added ? '✓ Added!' : copies > 1 ? `Add ${copies} to cart` : 'Add to cart'}
+          </button>
+          <button
+            type="button"
+            disabled={soldOut || paying}
+            onClick={handleBuyNow}
+            className="skin-btn skin-btn-soft min-h-11 text-base font-bold"
+          >
+            {paying ? 'Opening Stripe…' : 'Buy now'}
+            <span className="sr-only"> — pay for {book.title} now</span>
           </button>
         </div>
       </div>

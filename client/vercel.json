@@ -1,8 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://YOUR-API.up.railway.app/api/:path*"
+      "destination": "https://book-store-db-o3h2.onrender.com/api/:path*"
     }
   ]
 }

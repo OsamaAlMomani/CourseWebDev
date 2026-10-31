@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { api } from '../lib/api'
+import { api, forgetToken } from '../lib/api'
 import { authClient } from '../lib/authClient'
 
 // Everything about "me as a shopper": who is signed in, my cart, my wishlist, and the pop-ups (sign-in dialog, cart drawer, toast).
@@ -17,11 +17,13 @@ export function ShopProvider({ children }) {
 
   const [cart, setCart] = useState(emptyCart)
   const [wishlist, setWishlist] = useState([])
-  const [purchased, setPurchased] = useState(() => new Set()) // ids of every book this person has ordered before
+  const [purchased, setPurchased] = useState(() => new Set()) // ids of every book this person has paid for
   const [authMode, setAuthMode] = useState(null) // null (closed) | 'signin' | 'signup'
   const [cartOpen, setCartOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [noticeTone, setNoticeTone] = useState('ok') // 'ok' gets a tick, 'error' gets a !
+  const [payments, setPayments] = useState({ enabled: false, currency: 'usd', loaded: false })
+  const [refreshKey, setRefreshKey] = useState(0)
 
   // a short message at the bottom of the screen
   const notify = useCallback((message, tone = 'ok') => {
@@ -30,7 +32,18 @@ export function ShopProvider({ children }) {
     window.setTimeout(() => setNotice((current) => (current === message ? '' : current)), 3500)
   }, [])
 
-  // Whenever the signed-in person changes: load their cart + wishlist from the server (or clear them on sign-out).
+  // Is online payment configured on the server? Public endpoint, asked once.
+  useEffect(() => {
+    let alive = true
+    api('/payments/config')
+      .then((p) => alive && setPayments({ enabled: Boolean(p?.enabled), currency: p?.currency ?? 'usd', loaded: true }))
+      .catch(() => alive && setPayments((p) => ({ ...p, loaded: true })))
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  // Whenever the signed-in person changes (or we ask for a refresh): load their cart + wishlist + orders.
   useEffect(() => {
     if (!user) {
       setCart(emptyCart)
@@ -42,9 +55,11 @@ export function ShopProvider({ children }) {
     Promise.all([
       api('/cart'),
       api('/wishlist'),
-      // past orders -> the ids of the books in them (if this one fails the shelves just show no "owned" books)
+      // past orders -> the ids of books actually paid for (pending/failed orders do not count as owned)
       api('/orders')
-        .then((orders) => orders.flatMap((o) => o.items.map((i) => i.bookId)))
+        .then((orders) =>
+          orders.filter((o) => o.paid || o.status === 'placed').flatMap((o) => o.items.map((i) => i.bookId)),
+        )
         .catch(() => []),
     ])
       .then(([c, w, ownedIds]) => {
@@ -57,7 +72,7 @@ export function ShopProvider({ children }) {
     return () => {
       ignore = true
     }
-  }, [user?.id, notify]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id, refreshKey, notify]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // run a server action; show its error as a toast instead of crashing
   const attempt = useCallback(
@@ -78,6 +93,23 @@ export function ShopProvider({ children }) {
     return true
   }
 
+  // Sign out on the server, then make sure this browser forgets the bearer token even if the request failed.
+  const signOut = useCallback(async () => {
+    try {
+      return await authClient.signOut()
+    } finally {
+      forgetToken()
+    }
+  }, [])
+
+  // Send the browser to Stripe's hosted payment page. The URL is created by OUR server, which looked up
+  // the real prices in the database; the browser cannot choose an amount.
+  const goToStripe = (response) => {
+    if (!response?.url) throw new Error('The payment page could not be opened. Please try again.')
+    window.location.assign(response.url)
+    return response
+  }
+
   const value = useMemo(
     () => ({
       user,
@@ -88,6 +120,10 @@ export function ShopProvider({ children }) {
       cartOpen,
       setCartOpen,
       notify,
+      payments,
+      signOut,
+      // re-read cart/wishlist/orders from the server (used after returning from a payment)
+      refreshShop: () => setRefreshKey((n) => n + 1),
 
       cart,
       cartCount: cart.items.reduce((n, i) => n + i.quantity, 0),
@@ -103,14 +139,17 @@ export function ShopProvider({ children }) {
       setQuantity: (bookId, quantity) =>
         attempt(async () => setCart(await api(`/cart/${bookId}`, { method: 'PUT', body: { quantity } }))),
       removeFromCart: (bookId) => attempt(async () => setCart(await api(`/cart/${bookId}`, { method: 'DELETE' }))),
-      // checkout throws on purpose: the cart drawer shows the error inside the form
-      checkout: async (form) => {
-        const order = await api('/orders', { method: 'POST', body: form })
-        // the books in the cart are now owned, so the shelves can start celebrating them straight away
-        setPurchased((prev) => new Set([...prev, ...cart.items.map((i) => i.id)]))
-        setCart(emptyCart)
-        return order
-      },
+
+      // Cart checkout -> a Stripe Checkout Session. Throws on purpose: the drawer shows the error in the form.
+      startCheckout: async (form) => goToStripe(await api('/checkout/cart', { method: 'POST', body: form })),
+      // "Buy now" on a book card -> one book, address collected by Stripe.
+      buyNow: (book, quantity = 1) =>
+        needLogin()
+          ? false
+          : attempt(async () => {
+              const response = await api('/checkout/buy-now', { method: 'POST', body: { bookId: book.id, quantity } })
+              return goToStripe(response)
+            }),
 
       isPurchased: (bookId) => purchased.has(bookId),
       wishlist,
@@ -124,7 +163,7 @@ export function ShopProvider({ children }) {
         }),
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user, sessionLoading, authMode, cartOpen, cart, wishlist, purchased],
+    [user, sessionLoading, authMode, cartOpen, cart, wishlist, purchased, payments, signOut],
   )
   const noticeValue = useMemo(() => ({ notice, noticeTone }), [notice, noticeTone])
 

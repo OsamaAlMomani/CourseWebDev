@@ -1,17 +1,42 @@
 import { Router } from 'express'
-import { query, transaction } from '../db.js'
+import { query } from '../db.js'
 import { httpError } from '../middleware.js'
 
 const router = Router() // mounted behind requireAuth
 
-const clean = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '')
+const ORDER_COLUMNS = `o.id, o.status, o.total_cents, o.currency, o.created_at, o.paid_at,
+                       o.ship_name, o.ship_address, o.ship_country`
 
-// GET /api/orders -> my past orders, newest first, each with its lines (json_agg packs the lines into one JSON list per order)
+// One shape for every endpoint. "paid" is derived from the status the webhook sets; the browser
+// can never make an order look paid by changing a request.
+const toOrder = (row, items) => ({
+  id: row.id,
+  status: row.status,
+  paid: row.status === 'paid',
+  total: row.total_cents / 100,
+  currency: row.currency ?? 'usd',
+  createdAt: row.created_at,
+  paidAt: row.paid_at,
+  shipTo: {
+    name: row.ship_name ?? '',
+    address: row.ship_address ?? '',
+    country: row.ship_country ?? '',
+  },
+  items: items.map((i) => ({
+    bookId: i.book_id,
+    title: i.title,
+    quantity: i.quantity,
+    unitPrice: i.unit_price_cents / 100,
+  })),
+})
+
+// GET /api/orders -> my past orders, newest first, each with its lines
+// (json_agg packs the lines into one JSON list per order instead of N+1 queries)
 router.get('/', async (req, res) => {
   const { rows } = await query(
-    `select o.id, o.total_cents, o.status, o.created_at, o.ship_name, o.ship_address, o.ship_country,
+    `select ${ORDER_COLUMNS},
             coalesce(
-              json_agg(json_build_object('bookId', i.book_id, 'title', i.title, 'quantity', i.quantity, 'unitPriceCents', i.unit_price_cents)
+              json_agg(json_build_object('book_id', i.book_id, 'title', i.title, 'quantity', i.quantity, 'unit_price_cents', i.unit_price_cents)
                        order by i.title) filter (where i.book_id is not null),
               '[]') as items
        from orders o left join order_items i on i.order_id = o.id
@@ -20,63 +45,23 @@ router.get('/', async (req, res) => {
       order by o.created_at desc`,
     [req.user.id],
   )
-  res.json(
-    rows.map((o) => ({
-      id: o.id,
-      status: o.status,
-      total: o.total_cents / 100,
-      createdAt: o.created_at,
-      shipTo: { name: o.ship_name, address: o.ship_address, country: o.ship_country },
-      items: o.items.map((i) => ({ bookId: i.bookId, title: i.title, quantity: i.quantity, unitPrice: i.unitPriceCents / 100 })),
-    })),
-  )
+  res.set('Cache-Control', 'no-store').json(rows.map((row) => toOrder(row, row.items)))
 })
 
-// POST /api/orders  { name, address, country } -> turns the cart into an order.
-// Everything happens inside ONE transaction: check stock, reduce stock, write the order, empty the cart.
-// If any step fails, all of it is undone, so nobody is charged for a half-finished order.
-router.post('/', async (req, res) => {
-  const name = clean(req.body?.name, 120)
-  const address = clean(req.body?.address, 300)
-  const country = clean(req.body?.country, 80)
-  if (!name || !address || !country) throw httpError(400, 'Please fill in your name, address and country.')
+// GET /api/orders/:id -> one of MY orders. The success page polls this while the webhook is on its way.
+// It only READS: marking an order paid is the webhook's job, never the page's.
+router.get('/:id', async (req, res) => {
+  const id = Number(req.params.id)
+  if (!Number.isInteger(id) || id < 1) throw httpError(404, 'Order not found.')
 
-  const order = await transaction(async (db) => {
-    // order by book_id so two people checking out at once always lock rows in the same order (avoids deadlocks)
-    const { rows: lines } = await db.query(
-      `select c.book_id, c.quantity, b.title, b.price_cents
-         from cart_items c join books b on b.id = c.book_id
-        where c.user_id = $1 order by c.book_id`,
-      [req.user.id],
-    )
-    if (!lines.length) throw httpError(400, 'Your cart is empty.')
+  const { rows } = await query(`select ${ORDER_COLUMNS} from orders o where o.id = $1 and o.user_id = $2`, [id, req.user.id])
+  if (!rows[0]) throw httpError(404, 'Order not found.')
 
-    for (const line of lines) {
-      // "stock >= quantity" inside the UPDATE makes the check and the change one atomic step (no overselling)
-      const result = await db.query('update books set stock = stock - $2 where id = $1 and stock >= $2', [line.book_id, line.quantity])
-      if (result.rowCount === 0) throw httpError(409, `Sorry, "${line.title}" doesn't have enough copies left.`)
-    }
-
-    const totalCents = lines.reduce((sum, l) => sum + l.price_cents * l.quantity, 0)
-    const {
-      rows: [created],
-    } = await db.query(
-      `insert into orders (user_id, total_cents, ship_name, ship_address, ship_country)
-       values ($1, $2, $3, $4, $5) returning id`,
-      [req.user.id, totalCents, name, address, country],
-    )
-    // copy title + price into the order lines (the "snapshot")
-    await db.query(
-      `insert into order_items (order_id, book_id, title, unit_price_cents, quantity)
-       select $1, c.book_id, b.title, b.price_cents, c.quantity
-         from cart_items c join books b on b.id = c.book_id where c.user_id = $2`,
-      [created.id, req.user.id],
-    )
-    await db.query('delete from cart_items where user_id = $1', [req.user.id])
-    return { id: created.id, total: totalCents / 100 }
-  })
-
-  res.status(201).json(order)
+  const { rows: items } = await query(
+    'select book_id, title, unit_price_cents, quantity from order_items where order_id = $1 order by title',
+    [id],
+  )
+  res.set('Cache-Control', 'no-store').json(toOrder(rows[0], items))
 })
 
 export default router

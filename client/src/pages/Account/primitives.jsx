@@ -44,16 +44,38 @@ export function Avatar({ name, size = 'md' }) {
   )
 }
 
+// How each order status should look to a shopper. The database decides the status; the webhook is
+// the only thing that can move an order to "paid".
+const STATUS = {
+  paid: { label: 'Paid', cls: 'bg-mint text-ink' },
+  pending: { label: 'Awaiting payment', cls: 'bg-sun text-ink' },
+  cancelled: { label: 'Not paid', cls: 'bg-coral text-ink' },
+  expired: { label: 'Not paid', cls: 'bg-coral text-ink' },
+  failed: { label: 'Payment failed', cls: 'bg-coral text-ink' },
+  refunded: { label: 'Refunded', cls: 'bg-lavender text-ink' },
+  placed: { label: 'Placed (demo)', cls: 'bg-sun text-ink' },
+}
+
+export function OrderStatus({ status }) {
+  const meta = STATUS[status] ?? { label: status, cls: 'bg-sun text-ink' }
+  return (
+    <span className={`rounded-full px-3 py-0.5 text-xs font-extrabold tracking-wide uppercase ${meta.cls}`}>
+      {meta.label}
+    </span>
+  )
+}
+
 export function OrderCard({ o, onBuyAgain, busy = false }) {
+  const paid = o.paid || o.status === 'placed'
   return (
     <li className="skin-card skin-card--flat skin-order p-5">
       <div className="skin-order__header flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-skin text-xl font-extrabold">Order #{o.id}</h3>
+        <h3 className="font-skin text-xl font-extrabold">
+          <a href={`#/order/${o.id}`} className="underline-offset-4 hover:underline">Order #{o.id}</a>
+        </h3>
         <p className="flex items-center gap-2 text-sm text-skin-muted">
           {formatDate(o.createdAt)}
-          <span className="rounded-full bg-skin-pop px-3 py-0.5 text-xs font-extrabold tracking-wide text-skin-pop-ink uppercase">
-            {o.status}
-          </span>
+          <OrderStatus status={o.status} />
         </p>
       </div>
 
@@ -73,32 +95,41 @@ export function OrderCard({ o, onBuyAgain, busy = false }) {
         <span>{formatPrice(o.total)}</span>
       </p>
 
-      <div className="mt-4 border-t border-skin-line pt-3">
-        <p className="text-sm text-skin-muted">Tap a book to see it celebrate again.</p>
-        <div className="flex flex-wrap gap-4 pt-16 pb-3">
-          {o.items.map((i) => (
-            <PurchasedBook
-              key={i.bookId}
-              size="sm"
-              auto={false}
-              book={{ id: i.bookId, title: i.title }}
-            />
-          ))}
+      {paid && (
+        <div className="mt-4 border-t border-skin-line pt-3">
+          <p className="text-sm text-skin-muted">Tap a book to see it celebrate again.</p>
+          <div className="flex flex-wrap gap-4 pt-16 pb-3">
+            {o.items.map((i) => (
+              <PurchasedBook
+                key={i.bookId}
+                size="sm"
+                auto={false}
+                book={{ id: i.bookId, title: i.title }}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="skin-order__footer flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-skin-muted">
-          Shipping to {o.shipTo.name}, {o.shipTo.country}
+          {o.shipTo?.name
+            ? `Shipping to ${o.shipTo.name}${o.shipTo.country ? `, ${o.shipTo.country}` : ''}`
+            : 'Delivery address is collected on the payment page.'}
         </p>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => onBuyAgain(o.items)}
-          className="btn skin-btn skin-btn-soft min-h-11"
-        >
-          {busy ? 'Adding…' : 'Buy again'}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <a href={`#/order/${o.id}`} className="min-h-11 py-2 font-bold text-skin-link underline">
+            {o.status === 'pending' ? 'Check payment' : 'View order'}
+          </a>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onBuyAgain(o.items)}
+            className="btn skin-btn skin-btn-soft min-h-11"
+          >
+            {busy ? 'Adding…' : 'Buy again'}
+          </button>
+        </div>
       </div>
     </li>
   )

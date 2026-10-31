@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from 'react'
 import { useShop } from '../../context/ShopContext'
 import { useSkin } from '../../context/SkinContext'
 import { useCatalog } from '../../context/CatalogContext'
-import { authClient } from '../../lib/authClient'
 import { cover } from '../../lib/asset'
 import { formatPrice } from '../../lib/format'
 import { voices } from '../../data/themes'
@@ -16,7 +15,7 @@ import { useOrders, useAccountStats } from './useAccountData'
 import ProfilePanel from './ProfilePanel'
 
 export default function AccountPage() {
-  const { user, sessionLoading, openAuth, wishlist, toggleWishlist, addToCart, setCartOpen, notify } = useShop()
+  const { user, sessionLoading, openAuth, wishlist, toggleWishlist, addToCart, setCartOpen, notify, signOut: signOutUser } = useShop()
   const { groups, books } = useCatalog()
   const voice = voices[useSkin()] ?? voices.home
   const [tab, setTab] = useState('overview')
@@ -65,7 +64,7 @@ export default function AccountPage() {
   async function signOut() {
     if (signingOut) return
     setSigningOut(true)
-    const { error } = await authClient.signOut()
+    const { error } = await signOutUser()
     if (error) {
       setSigningOut(false)
       notify('We could not sign you out. Please try again.')

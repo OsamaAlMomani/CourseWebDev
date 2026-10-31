@@ -129,14 +129,23 @@ create table if not exists wishlist_items (
 
 -- An order header + its lines. Lines COPY the title and price at purchase time (a "snapshot"),
 -- so changing a book's price tomorrow never rewrites yesterday's receipt.
+--
+-- The payment lifecycle lives in `status`:
+--   pending   -> order created, stock reserved, waiting for Stripe
+--   paid      -> Stripe's webhook confirmed the money (ONLY the webhook may set this)
+--   cancelled -> checkout session expired / was abandoned; stock was put back
+--   failed    -> Stripe reported the payment failed; stock was put back
+--   refunded  -> money returned (we keep the order for the receipt)
+--   placed    -> legacy demo orders from before payments (no money was taken)
 create table if not exists orders (
   id            integer generated always as identity primary key,
   user_id       text not null references "user"(id) on delete cascade,
   total_cents   integer not null check (total_cents >= 0),
-  status        text not null default 'placed',
-  ship_name     text not null,
-  ship_address  text not null,
-  ship_country  text not null,
+  status        text not null default 'pending',
+  -- empty for buy-now orders until Stripe sends the address back on the webhook
+  ship_name     text,
+  ship_address  text,
+  ship_country  text,
   created_at    timestamptz not null default now()
 );
 create index if not exists orders_user_idx on orders (user_id, created_at desc);
@@ -149,6 +158,42 @@ create table if not exists order_items (
   quantity          integer not null check (quantity > 0),
   primary key (order_id, book_id)
 );
+
+-- ---------------------------------------------------------------- payments (Stripe)
+-- New orders start unpaid. These columns are added with ALTER so an older database is upgraded in place.
+alter table orders add column if not exists currency                         text not null default 'usd';
+alter table orders add column if not exists customer_email                   text;
+alter table orders add column if not exists stripe_checkout_session_id       text;
+alter table orders add column if not exists stripe_payment_intent_id         text;
+alter table orders add column if not exists paid_at                          timestamptz;
+alter table orders add column if not exists updated_at                       timestamptz not null default now();
+-- true while this order is holding copies out of `books.stock`; set to false when we put them back
+alter table orders add column if not exists stock_reserved                   boolean not null default true;
+
+-- one order per Stripe session, and fast lookup by what Stripe sends us
+create unique index if not exists orders_stripe_session_idx
+  on orders (stripe_checkout_session_id) where stripe_checkout_session_id is not null;
+create index if not exists orders_payment_intent_idx
+  on orders (stripe_payment_intent_id) where stripe_payment_intent_id is not null;
+create index if not exists orders_status_idx on orders (status, created_at desc);
+
+-- New orders are 'pending'; older databases used 'placed' as the default. ALTER DEFAULT is safe to repeat.
+alter table orders alter column status set default 'pending';
+
+-- Buy-now orders don't collect an address on our form (Stripe collects it), so these may be empty until payment.
+alter table orders alter column ship_name drop not null;
+alter table orders alter column ship_address drop not null;
+alter table orders alter column ship_country drop not null;
+
+-- Stripe retries webhooks. This table stores the events we already handled, so a retry can never
+-- mark an order twice, restore stock twice, or delete a cart twice. The primary key is Stripe's own event id.
+create table if not exists stripe_events (
+  id           text primary key,
+  type         text not null,
+  order_id     integer references orders(id) on delete set null,
+  received_at  timestamptz not null default now()
+);
+create index if not exists stripe_events_order_idx on stripe_events (order_id);
 
 -- ============================================================================================
 -- 4) FORMS - what visitors send us (no login needed)

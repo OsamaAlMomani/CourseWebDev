@@ -10,6 +10,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import { query, transaction } from '../db.js'
 import { config } from '../config.js'
 import { httpError } from '../middleware.js'
+import { rateLimit } from '../rateLimit.js'
 
 const router = Router()
 
@@ -43,22 +44,6 @@ function toTsQuery(raw) {
   return clean.length ? clean.map((w) => `${w}:*`).join(' & ') : null
 }
 
-// Tiny in-memory rate limiter (per IP). Enough to stop a script hammering checkout or search;
-// if you ever run several server copies, move this to Redis.
-const hits = new Map()
-function rateLimit(name, max, windowMs) {
-  return (req, _res, next) => {
-    const key = `${name}:${req.ip}`
-    const now = Date.now()
-    const recent = (hits.get(key) ?? []).filter((t) => now - t < windowMs)
-    if (recent.length >= max) return next(httpError(429, 'Too many requests. Please wait a moment and try again.'))
-    recent.push(now)
-    hits.set(key, recent)
-    next()
-  }
-}
-setInterval(() => hits.clear(), 60 * 60 * 1000).unref() // forget old entries once an hour
-
 // ---------------------------------------------------------------- CSRF
 // CSRF = another website tricking your browser into sending a request to ours.
 // Defence: (1) the Origin header must be one of our own sites, (2) the request must carry a token that only our own
@@ -69,7 +54,7 @@ const sign = (stamp) => createHmac('sha256', config.authSecret).update(`research
 
 function checkCsrf(req, _res, next) {
   const origin = req.get('origin')
-  if (origin && !config.origins.includes(origin)) return next(httpError(403, 'Request blocked (unknown origin).'))
+  if (origin && !config.isAllowedOrigin(origin)) return next(httpError(403, 'Request blocked (unknown origin).'))
   const token = req.get('x-csrf-token') ?? ''
   const [stamp, mac] = token.split('.')
   const age = Date.now() - Number(stamp)

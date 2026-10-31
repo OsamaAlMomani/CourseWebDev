@@ -7,9 +7,21 @@ import { voices } from '../../data/themes'
 
 const inputCls = 'skin-input min-h-12 w-full px-3 py-2.5 text-base'
 
+// Better Auth's messages are accurate but written for developers. These are the ones a shopper can act on.
+function friendlyAuthError(error, signup) {
+  const message = String(error?.message ?? '')
+  if (/already exists/i.test(message)) return 'That email already has an account. Try signing in instead.'
+  if (/invalid email or password/i.test(message)) return 'That email and password do not match. Please try again.'
+  if (/password/i.test(message) && /(short|8)/i.test(message)) return 'Please choose a password with at least 8 characters.'
+  if (/email/i.test(message) && /(invalid|valid)/i.test(message)) return 'That email address does not look right.'
+  if (/too many/i.test(message)) return 'Too many attempts. Please wait a minute and try again.'
+  if (signup) return message || 'We could not create your account. Please try again.'
+  return message || 'We could not sign you in. Please check your email and password.'
+}
+
 // Sign in / create account, in a native <dialog> (the browser handles focus trapping and the Escape key for us).
 // The real work is done by Better Auth: authClient.signIn.email / signUp.email talk to /api/auth/* on the server,
-// the server sets the session cookie, and authClient.useSession() (in ShopContext) updates the whole UI.
+// the server sets the session cookie AND returns a bearer token, and authClient.useSession() updates the whole UI.
 export default function AuthDialog() {
   const { authMode, openAuth, closeAuth, notify } = useShop()
   const ref = useRef(null)
@@ -24,24 +36,40 @@ export default function AuthDialog() {
     if (authMode && !dialog.open) dialog.showModal()
     if (!authMode && dialog.open) dialog.close()
     setError('')
+    setBusy(false)
   }, [authMode])
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const { name, email, password } = Object.fromEntries(new FormData(e.currentTarget))
-    setBusy(true)
-    setError('')
-    // Better Auth returns { data, error } instead of throwing
-    const { error: authError } = signup
-      ? await authClient.signUp.email({ name, email, password })
-      : await authClient.signIn.email({ email, password })
-    setBusy(false)
-    if (authError) {
-      setError(authError.message || 'That did not work. Please check your details.')
+    const form = Object.fromEntries(new FormData(e.currentTarget))
+    const name = String(form.name ?? '').trim()
+    const email = String(form.email ?? '').trim().toLowerCase()
+    const password = String(form.password ?? '')
+
+    if (signup && password !== String(form.confirm ?? '')) {
+      setError('The two passwords are not the same.')
       return
     }
-    notify(signup ? 'Welcome to GlobalBooks!' : 'Welcome back!')
-    closeAuth()
+
+    setBusy(true)
+    setError('')
+    try {
+      // Better Auth returns { data, error } instead of throwing (but a network failure still throws).
+      const result = signup
+        ? await authClient.signUp.email({ name, email, password })
+        : await authClient.signIn.email({ email, password })
+
+      if (result?.error) {
+        setError(friendlyAuthError(result.error, signup))
+        return
+      }
+      notify(signup ? 'Welcome to GlobalBooks!' : 'Welcome back!')
+      closeAuth()
+    } catch {
+      setError('We could not reach the server. Check your connection and try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -54,7 +82,7 @@ export default function AuthDialog() {
     >
       {/* a stripe of the shelf's colours along the top */}
       <div aria-hidden="true" className="h-3 bg-skin-pop" />
-      <form onSubmit={handleSubmit} className="grid gap-4 p-6 sm:p-8">
+      <form onSubmit={handleSubmit} className="grid gap-4 p-6 sm:p-8" noValidate={false}>
         <p className="text-5xl" aria-hidden="true">{icon}</p>
         <h2 id="auth-title" className="font-skin text-4xl font-extrabold tracking-[-0.03em]">
           {signup ? 'Create your account' : 'Welcome back'}
@@ -66,12 +94,20 @@ export default function AuthDialog() {
         {signup && (
           <label className="grid gap-1 font-medium">
             Your name
-            <input name="name" required autoComplete="name" className={inputCls} />
+            <input name="name" required autoComplete="name" autoFocus className={inputCls} />
           </label>
         )}
         <label className="grid gap-1 font-medium">
           Email
-          <input type="email" name="email" required autoComplete="email" inputMode="email" className={inputCls} />
+          <input
+            type="email"
+            name="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            autoFocus={!signup}
+            className={inputCls}
+          />
         </label>
         <label className="grid gap-1 font-medium">
           Password {signup && <span className="text-sm font-normal text-skin-muted">(at least 8 characters)</span>}
@@ -84,8 +120,21 @@ export default function AuthDialog() {
             className={inputCls}
           />
         </label>
+        {signup && (
+          <label className="grid gap-1 font-medium">
+            Password again
+            <input
+              type="password"
+              name="confirm"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              className={inputCls}
+            />
+          </label>
+        )}
 
-        <p role="alert" className="min-h-6 font-medium text-skin-danger">{error}</p>
+        <p role="alert" aria-live="polite" className="min-h-6 font-medium text-skin-danger">{error}</p>
 
         <Button as="button" type="submit" variant="skin" large disabled={busy}>
           {busy ? 'One moment…' : signup ? 'Create account' : 'Sign in'}

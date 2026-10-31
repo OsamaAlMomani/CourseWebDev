@@ -26,13 +26,15 @@ export function useOrders(userId) {
 }
 
 // Derives everything the Overview tab needs from the order list in one pass.
+// Money and book counts only use orders that were actually paid (a pending or cancelled order is not a purchase).
 export function useAccountStats(orders, booksById, groups) {
   return useMemo(() => {
     let spent = 0
     let booksBought = 0
     const byGroup = new Map()
+    const paidOrders = orders.filter((o) => o.paid || o.status === 'placed')
 
-    for (const o of orders) {
+    for (const o of paidOrders) {
       spent += o.total
       for (const i of o.items) {
         booksBought += i.quantity
@@ -54,6 +56,7 @@ export function useAccountStats(orders, booksById, groups) {
       favourite,
       lastOrder: orders[0] ?? null,
       orderCount: orders.length,
+      paidOrderCount: paidOrders.length,
     }
   }, [orders, booksById, groups])
 }

@@ -31,6 +31,7 @@ src/
 │   ├── Shelf/            AudiencePage, Shelf, BookCard, Decor, ... + Shelf.css   (Kids, Teens, Students ...)
 │   ├── Account/          AccountPage, ProfilePanel, primitives, ProfileBackdrop, useAccountData + Account.css
 │   ├── Research/         ResearchPage, cards, Modal, OrderModal, SearchModal, bits + Research.css
+│   ├── Order/            OrderSuccessPage.jsx: the payment confirmation (#/order/12)
 │   └── MotionLab/        MotionLab.jsx + MotionLab.css
 │
 ├── shared/              Used by more than one page
