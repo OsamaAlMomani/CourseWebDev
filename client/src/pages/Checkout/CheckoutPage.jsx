@@ -114,8 +114,8 @@ export default function CheckoutPage({ orderId: returnedOrderId = null }) {
     ;(async () => {
       const stripe = await loadStripe(pay.publishableKey)
       if (!stripe) throw new Error('Stripe could not be loaded. Check your connection.')
-      const init = stripe.initEmbeddedCheckout ?? stripe.createEmbeddedCheckoutPage
-      embedded = await init.call(stripe, { clientSecret: pay.clientSecret })
+      const init = stripe.createEmbeddedCheckoutPage ?? stripe.initEmbeddedCheckout
+            embedded = await init.call(stripe, { clientSecret: pay.clientSecret })
       if (cancelled) {
         embedded.destroy()
         return

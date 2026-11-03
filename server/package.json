@@ -7,6 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "stripe:listen": "stripe listen --events checkout.session.completed,checkout.session.expired,checkout.session.async_payment_succeeded,checkout.session.async_payment_failed,charge.refunded --forward-to localhost:4000/api/stripe/webhook",
     "setup": "node scripts/setup.js",
     "dev": "node --watch --env-file=.env src/index.js",
     "start": "node src/index.js",
