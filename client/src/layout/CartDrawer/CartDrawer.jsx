@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useShop } from '../../context/ShopContext'
 import { formatPrice } from '../../lib/format'
 import { cover } from '../../lib/asset'
@@ -7,16 +7,11 @@ import { useSkin } from '../../context/SkinContext'
 import Stepper from '../../shared/Stepper'
 import Button from '../../shared/Button'
 
-const inputCls = 'skin-input min-h-12 w-full px-3 py-2.5 text-base'
-
-// The cart, as a panel that slides in from the right. Two views: the list ('cart') and the delivery form ('checkout').
-// Paying sends the browser to Stripe's hosted Checkout page. The order is only marked paid by Stripe's webhook.
+// The cart, as a panel that slides in from the right. Its Checkout button opens the checkout boxes (#/checkout):
+// books, delivery, pay, done. The order is only ever marked paid by Stripe's webhook.
 export default function CartDrawer() {
-  const { user, cart, cartOpen, setCartOpen, setQuantity, removeFromCart, startCheckout, openAuth, payments } = useShop()
+  const { user, cart, cartOpen, setCartOpen, setQuantity, removeFromCart, openAuth } = useShop()
   const ref = useRef(null)
-  const [view, setView] = useState('cart')
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
   // the dialog sits inside the app's skin wrapper, so it already has the right colours; the words come from the shelf's voice
   const voice = voices[useSkin()] ?? voices.home
 
@@ -24,34 +19,14 @@ export default function CartDrawer() {
     const dialog = ref.current
     if (cartOpen && !dialog.open) dialog.showModal()
     if (!cartOpen && dialog.open) dialog.close()
-    if (cartOpen) {
-      setError('')
-      setBusy(false)
-    }
-    if (!cartOpen && view === 'checkout') setView('cart')
-  }, [cartOpen]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [cartOpen])
 
-  async function pay(e) {
-    e.preventDefault()
-    setBusy(true)
-    setError('')
-    try {
-      // The server reads the cart and the real prices from the database, creates the order and returns
-      // a Stripe Checkout URL. We only send the delivery details.
-      await startCheckout(Object.fromEntries(new FormData(e.currentTarget)))
-      // On success the browser is already on its way to Stripe. Keep the button disabled meanwhile.
-    } catch (err) {
-      setError(err.message)
-      setBusy(false)
-    }
-  }
-
-  const close = () => {
+  function goCheckout() {
     setCartOpen(false)
-    setView('cart')
+    window.location.hash = '#/checkout'
   }
 
-  const paymentsReady = payments.enabled
+  const close = () => setCartOpen(false)
 
   return (
     <dialog
@@ -64,8 +39,8 @@ export default function CartDrawer() {
       <div className="flex h-full flex-col">
         <header className="flex items-center justify-between border-b-2 border-skin-line p-5">
           <h2 className="font-skin text-3xl font-extrabold tracking-[-0.03em]">
-            {view === 'checkout' ? 'Delivery & payment' : 'Your cart'}
-            {view === 'cart' && cart.items.length > 0 && (
+            Your cart
+            {cart.items.length > 0 && (
               <span className="ml-2 align-middle text-base font-bold text-skin-muted">
                 ({cart.items.reduce((n, i) => n + i.quantity, 0)})
               </span>
@@ -90,46 +65,6 @@ export default function CartDrawer() {
             <p className="font-skin text-2xl font-extrabold">{voice.cartEmpty}</p>
             <Button as="button" type="button" variant="skin" onClick={close}>{voice.cartCta}</Button>
           </div>
-        ) : view === 'checkout' ? (
-          <form onSubmit={pay} className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
-            <label className="grid gap-1 font-medium">Full name
-              <input name="name" required defaultValue={user.name} autoComplete="name" className={inputCls} />
-            </label>
-            <label className="grid gap-1 font-medium">Address
-              <textarea name="address" required rows={3} autoComplete="street-address" className={`${inputCls} resize-y`} />
-            </label>
-            <label className="grid gap-1 font-medium">Country
-              <input name="country" required autoComplete="country-name" className={inputCls} />
-            </label>
-
-            <div className="rounded-2xl bg-sun/40 p-4 text-sm leading-relaxed">
-              <p className="font-bold">Secure payment by Stripe</p>
-              <p>
-                You will pay <strong>{formatPrice(cart.total)}</strong> on Stripe’s own page. Your card details never
-                touch this shop.
-              </p>
-              <p className="mt-1 text-skin-muted">
-                Test mode: pay with <strong>4242 4242 4242 4242</strong>, any future date and any CVC.
-              </p>
-            </div>
-
-            {payments.loaded && !paymentsReady && (
-              <p className="rounded-2xl bg-coral/50 p-3 text-sm font-bold">
-                Online payment is not switched on yet, so checkout cannot start. Please try again later.
-              </p>
-            )}
-
-            <p role="alert" className="min-h-6 font-medium text-skin-danger">{error}</p>
-
-            <div className="mt-auto grid gap-2">
-              <Button as="button" type="submit" variant="skin" large disabled={busy || (payments.loaded && !paymentsReady)}>
-                {busy ? 'Opening Stripe…' : `Pay ${formatPrice(cart.total)} with Stripe`}
-              </Button>
-              <button type="button" onClick={() => setView('cart')} className="min-h-11 font-bold underline">
-                Back to cart
-              </button>
-            </div>
-          </form>
         ) : (
           <>
             <ul className="flex-1 overflow-y-auto px-5 py-2">
@@ -150,8 +85,8 @@ export default function CartDrawer() {
             </ul>
             <footer className="grid gap-3 border-t-2 border-skin-line p-5">
               <p className="flex justify-between text-xl font-extrabold"><span>Total</span><span>{formatPrice(cart.total)}</span></p>
-              <p className="text-sm text-skin-muted">Delivery details come next, then secure payment on Stripe.</p>
-              <Button as="button" type="button" variant="skin" large onClick={() => setView('checkout')}>Checkout</Button>
+              <p className="text-sm text-skin-muted">Next: delivery details, then secure payment by Stripe.</p>
+              <Button as="button" type="button" variant="skin" large onClick={goCheckout}>Checkout</Button>
               <button type="button" onClick={close} className="min-h-11 font-bold underline">Keep shopping</button>
             </footer>
           </>

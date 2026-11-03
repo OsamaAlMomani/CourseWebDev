@@ -22,8 +22,8 @@ const light = {
   heroVideoCls: 'opacity-70',
   videoBtn: 'bg-ink/70 text-paper',
   // light wash so the dark text stays readable, but thin enough that the video really shows through
-  heroShade: 'bg-linear-to-b from-skin-surface/75 to-[#dff1ff]/50 lg:bg-linear-to-r lg:from-skin-surface/90 lg:via-[#e8f4ff]/55 lg:to-[#dff1ff]/25 dark:to-[#0f2036]/60 dark:lg:via-[#0f2036]/60 dark:lg:to-[#0f2036]/30',
-  heroBg: 'bg-linear-to-br from-[#dff1ff] to-[#ffe9e6] text-ink dark:from-[#0f2036] dark:to-[#2a1a22]',
+  heroShade: 'bg-linear-to-b from-skin-surface/75 to-[#dff1ff]/50 lg:bg-linear-to-r lg:from-skin-surface/90 lg:via-[#e8f4ff]/55 lg:to-[#dff1ff]/25 dark:to-[#0c0b18]/60 dark:lg:via-[#0c0b18]/60 dark:lg:to-[#0c0b18]/30',
+  heroBg: 'bg-linear-to-br from-[#dff1ff] to-[#ffe9e6] text-ink dark:from-[#0c0b18] dark:to-[#1f1226]',
   heroPattern: '[background-image:radial-gradient(rgba(15,109,187,0.10)_2px,transparent_2px)] [background-size:28px_28px]',
   heroHeading: 't-display',
   accent: 'text-blue',

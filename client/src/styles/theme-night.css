@@ -9,10 +9,10 @@
    Anything that used a fixed colour was moved onto a variable, or carries a  dark:  class in its JSX.
 
    Rules of the house for Night:
-     * text is light (#e6eefb) on deep navy; muted text is #9db3cc
+     * text is cream (#f4efe6) on ink-black (#07070c); muted text is #9a94a8 (the INKWELL palette)
      * the pastel brand colours (sun, coral, mint, lavender) become DEEPER shades, because dark text on pastel
        has become light text, and light text needs a deeper background to stay readable (AA contrast)
-     * --color-blue is the LIGHT blue (it is used as text); buttons use --skin-accent, a deeper blue that carries white text
+     * --color-blue is the AMBER (it is used as accent text); buttons use --skin-accent, a violet that carries white text
 
    CLASS INDEX
      html[data-theme="dark"]        brand tokens, skin tokens, account palette
@@ -25,74 +25,76 @@ html[data-theme="dark"] {
   color-scheme: dark;
 
   /* ---- brand tokens (Tailwind utilities like bg-paper / text-ink read these) ---- */
-  --color-ink:      #e6eefb;
-  --color-ink-soft: #14263d;
-  --color-paper:    #0d1726;
-  --color-blue:     #6db3f0;
-  --color-coral:    #a8433e;
-  --color-sun:      #8a6414;
-  --color-mint:     #1f7a5c;
-  --color-lavender: #5b49b0;
-  --color-muted:    #9db3cc;
-  --color-line:     #24384f;
+  /* INKWELL palette: ink-black page, cream text, amber / rose / violet accents.
+     Pastel fills (sun, coral, mint, lavender) become DEEP shades because the text on them is cream. */
+  --color-ink:      #f4efe6;
+  --color-ink-soft: #0e0d16;
+  --color-paper:    #07070c;
+  --color-blue:     #f5b971;   /* used as accent TEXT, so it is the amber */
+  --color-coral:    #b4415f;
+  --color-sun:      #9a6a1f;
+  --color-mint:     #1f7a6e;
+  --color-lavender: #6d55d6;
+  --color-muted:    #9a94a8;
+  --color-line:     rgba(255,255,255,0.09);
 
   /* ---- skin tokens ---- */
-  --skin-bg:      #0d1726;
-  --skin-surface: #16253a;
-  --skin-line:    #24384f;
-  --skin-edge:    #2a3f58;
+  --skin-bg:      #07070c;
+  --skin-surface: #12111d;          /* stays OPAQUE: dialogs, inputs and the cart sit on it. Glass cards are done in inkwell.css */
+  --skin-line:    rgba(255,255,255,0.09);
+  --skin-edge:    rgba(255,255,255,0.10);
 
-  --skin-ink:     #e6eefb;
-  --skin-muted:   #9db3cc;
+  --skin-ink:     #f4efe6;
+  --skin-muted:   #9a94a8;
 
-  --skin-accent:     #2b78c9;
+  --skin-accent:     #7c5cf0;       /* carries white text (the account pill, avatar, active tab) */
   --skin-accent-ink: #ffffff;
-  --skin-pop:        #b84a44;
-  --skin-pop-ink:    #fff0ee;
-  --skin-link:       #7bbcf5;
+  --skin-pop:        #b4415f;
+  --skin-pop-ink:    #fff0f3;
+  --skin-link:       #f5b971;
   --skin-danger:     #ff8a90;
 
-  --skin-deep:        #102036;
-  --skin-deep-ink:    #e6eefb;
-  --skin-deep-muted:  #9db3cc;
-  --skin-deep-soft:   rgba(109,179,240,0.08);
-  --skin-deep-line:   rgba(109,179,240,0.22);
-  --skin-deep-pop:    #6db3f0;
+  --skin-deep:        rgba(14,13,24,0.62);
+  --skin-deep-ink:    #f4efe6;
+  --skin-deep-muted:  #9a94a8;
+  --skin-deep-soft:   rgba(167,139,250,0.08);
+  --skin-deep-line:   rgba(167,139,250,0.22);
+  --skin-deep-pop:    #f5b971;
 
-  --skin-foot:     #091220;
-  --skin-foot-ink: #b8c8dc;
-  --skin-foot-pop: #6db3f0;
+  --skin-foot:     transparent;
+  --skin-foot-ink: #b9b3c6;
+  --skin-foot-pop: #f5b971;
 
   --skin-shadow:
     0 1px 2px rgba(0,0,0,0.40),
     0 10px 26px -14px rgba(0,0,0,0.65);
-  --skin-btn-shadow: 0 6px 18px -6px rgba(43,120,201,0.50);
-  --skin-btn-pop-shadow: 0 6px 18px -6px rgba(184,74,68,0.50);
+  --skin-btn-shadow: 0 14px 44px -14px rgba(245,185,113,0.85);
+  --skin-btn-pop-shadow: 0 14px 44px -14px rgba(253,164,175,0.55);
 
-  --skin-input-bg:     #0f1d30;
-  --skin-input-border: #5f7f9e;
-  --skin-focus:        #8cc6ff;
-  --skin-backdrop:     rgba(2,8,16,0.68);
+  --skin-input-bg:     #0c0b15;
+  --skin-input-border: #6b6685;
+  --skin-focus:        #f5b971;
+  --skin-backdrop:     rgba(3,3,8,0.72);
 
-  --skin-disabled-bg:  #1d2e44;
-  --skin-disabled-ink: #7289a3;
+  --skin-disabled-bg:  #1b1a26;
+  --skin-disabled-ink: #756f88;
 
   --skin-strength-1: #ff7a80;
   --skin-strength-2: #ff7a80;
   --skin-strength-3: #f0b44c;
   --skin-strength-4: #55c58d;
 
-  --soft-ring: rgba(140,198,255,0.28);
+  --soft-ring: rgba(245,185,113,0.28);
 
   /* ---- account page palette (pages/Account/Account.css) ---- */
-  --stage-ivory:   #0f1b2d;
-  --stage-paper:   #0d1726;
+  --stage-ivory:   #0d0c16;
+  --stage-paper:   #07070c;
   --stage-apricot: #4a2f2a;
-  --stage-rose:    #4a2a33;
-  --stage-glass:   #1d3d5e;
+  --stage-rose:    #4a2a3a;
+  --stage-glass:   #1d3a4a;
   --stage-lilac:   #35295a;
   --stage-sun:     #4a3d1c;
-  --stage-ink:     #e6eefb;
+  --stage-ink:     #f4efe6;
 }
 
 /* more contrast was asked for: stronger edges in Night too */

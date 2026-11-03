@@ -142,14 +142,13 @@ export function ShopProvider({ children }) {
 
       // Cart checkout -> a Stripe Checkout Session. Throws on purpose: the drawer shows the error in the form.
       startCheckout: async (form) => goToStripe(await api('/checkout/cart', { method: 'POST', body: form })),
-      // "Buy now" on a book card -> one book, address collected by Stripe.
-      buyNow: (book, quantity = 1) =>
-        needLogin()
-          ? false
-          : attempt(async () => {
-              const response = await api('/checkout/buy-now', { method: 'POST', body: { bookId: book.id, quantity } })
-              return goToStripe(response)
-            }),
+      // "Buy now" on a book card -> the checkout boxes with just this book. Nothing is charged or reserved yet:
+      // the order is created when the person finishes the delivery box.
+      buyNow: (book, quantity = 1) => {
+        if (needLogin()) return false
+        window.location.hash = `#/checkout?book=${encodeURIComponent(book.id)}&qty=${quantity}`
+        return true
+      },
 
       isPurchased: (bookId) => purchased.has(bookId),
       wishlist,

@@ -14,7 +14,7 @@ export default function KidsBanner() {
       <Container>
         <a
           href={`#/${kids.id}`}
-          className="skin-card card-lift group relative isolate flex flex-col gap-8 overflow-hidden bg-linear-to-br from-[#d6ecff] to-[#ffe3e0] p-6 text-ink dark:from-[#14283f] dark:to-[#33222a] md:flex-row md:items-center md:justify-between md:p-12"
+          className="skin-card card-lift group relative isolate flex flex-col gap-8 overflow-hidden bg-linear-to-br from-[#d6ecff] to-[#ffe3e0] p-6 text-ink dark:from-[#15122a] dark:to-[#2a1626] md:flex-row md:items-center md:justify-between md:p-12"
         >
           <div className="max-w-[34ch]">
             <p className="t-eyebrow mb-4">🧸 New: the Kids Corner</p>

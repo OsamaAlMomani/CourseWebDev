@@ -12,7 +12,7 @@ export default function FeatureBook() {
   if (!book) return null
   return (
     <section aria-label="Book of the month" className="bg-paper py-16 md:py-28">
-      <div className="reveal mx-auto grid w-[min(1180px,calc(100%_-_2*var(--gutter)))] grid-cols-[minmax(0,1fr)] items-center gap-8 rounded-[36px] bg-[#ffe3e0] p-7 text-ink dark:bg-[#33222a] md:grid-cols-[260px_1fr] md:gap-10 md:p-12 lg:grid-cols-[300px_1fr]">
+      <div className="reveal mx-auto grid w-[min(1180px,calc(100%_-_2*var(--gutter)))] grid-cols-[minmax(0,1fr)] items-center gap-8 rounded-[36px] bg-[#ffe3e0] p-7 text-ink dark:bg-[#2a1626] md:grid-cols-[260px_1fr] md:gap-10 md:p-12 lg:grid-cols-[300px_1fr]">
         <img
           src={cover(book.id)}
           alt={`Cover of ${book.title}`}

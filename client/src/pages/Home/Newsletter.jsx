@@ -43,7 +43,7 @@ export default function Newsletter() {
   }
 
   return (
-    <section className="relative isolate overflow-hidden bg-linear-to-br from-[#cfe8ff] via-[#e3f2ff] to-[#ffd9d5] py-16 text-ink dark:from-[#142a45] dark:via-[#10223a] dark:to-[#33222a] md:py-20">
+    <section className="ink-newsletter relative isolate overflow-hidden bg-linear-to-br from-[#cfe8ff] via-[#e3f2ff] to-[#ffd9d5] py-16 text-ink dark:from-[#17132e] dark:via-[#120f24] dark:to-[#2a1626] md:py-20">
       {/* soft circles for a bit of depth */}
       <div aria-hidden="true" className="absolute -top-16 -left-10 -z-10 size-56 rounded-full bg-sun/30 blur-sm" />
       <div aria-hidden="true" className="absolute -right-16 -bottom-20 -z-10 size-72 rounded-full bg-mint/25 blur-sm" />

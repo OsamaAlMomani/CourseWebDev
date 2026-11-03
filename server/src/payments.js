@@ -69,8 +69,8 @@ export async function reserveCartOrder(userId, { name, address, country, email }
   })
 }
 
-// One-click "Buy now": a single book, no address form. Stripe collects the address and the webhook stores it.
-export async function reserveBuyNowOrder(userId, { bookId, quantity, email }) {
+// "Buy now": a single book. If the delivery box was filled in, the address is stored here; otherwise Stripe collects it.
+export async function reserveBuyNowOrder(userId, { bookId, quantity, email, name, address, country }) {
   const qty = Number(quantity ?? 1)
   if (!Number.isInteger(qty) || qty < 1 || qty > MAX_COPIES) throw httpError(400, `Quantity must be whole number from 1 to ${MAX_COPIES}.`)
 
@@ -86,10 +86,10 @@ export async function reserveBuyNowOrder(userId, { bookId, quantity, email }) {
     const {
       rows: [order],
     } = await db.query(
-      `insert into orders (user_id, total_cents, status, currency, customer_email, stock_reserved)
-       values ($1, $2, 'pending', $3, $4, true)
+      `insert into orders (user_id, total_cents, status, currency, customer_email, ship_name, ship_address, ship_country, stock_reserved)
+       values ($1, $2, 'pending', $3, $4, $5, $6, $7, true)
        returning id, total_cents, currency`,
-      [userId, book.price_cents * qty, config.stripeCurrency, clean(email, 254)],
+      [userId, book.price_cents * qty, config.stripeCurrency, clean(email, 254), clean(name, 120), clean(address, 300), clean(country, 80)],
     )
     await db.query(
       `insert into order_items (order_id, book_id, title, unit_price_cents, quantity) values ($1, $2, $3, $4, $5)`,
@@ -113,7 +113,7 @@ export async function loadOrder(orderId) {
   return { ...order, items }
 }
 
-export async function createCheckoutSession(order, { collectShipping = false } = {}) {
+export async function createCheckoutSession(order, { collectShipping = false, embedded = false } = {}) {
   if (!stripe) throw httpError(503, 'Online payment is not set up yet: the shop owner needs to add a Stripe secret key on the server.')
 
   const lineItems = order.items.map((item) => ({
@@ -129,8 +129,6 @@ export async function createCheckoutSession(order, { collectShipping = false } =
     },
   }))
 
-  const successUrl = `${config.clientUrl}/#/order/${order.id}?session_id={CHECKOUT_SESSION_ID}`
-  const cancelUrl = `${config.clientUrl}/#/order/${order.id}?canceled=1`
 
   const params = {
     mode: 'payment',
@@ -141,10 +139,17 @@ export async function createCheckoutSession(order, { collectShipping = false } =
       metadata: { orderId: String(order.id) },
       description: `GlobalBooks order #${order.id}`,
     },
-    success_url: successUrl,
-    cancel_url: cancelUrl,
     billing_address_collection: 'auto',
     expires_at: Math.floor(Date.now() / 1000) + 60 * 60, // the hosted page is valid for one hour
+  }
+  if (embedded) {
+    // The payment form is drawn inside our own page. When it finishes, Stripe sends the browser to return_url,
+    // which is the same step-box screen showing the last box (#/checkout/<id>).
+    params.ui_mode = config.stripeUiMode
+    params.return_url = `${config.clientUrl}/#/checkout/${order.id}?session_id={CHECKOUT_SESSION_ID}`
+  } else {
+    params.success_url = `${config.clientUrl}/#/order/${order.id}?session_id={CHECKOUT_SESSION_ID}`
+    params.cancel_url = `${config.clientUrl}/#/order/${order.id}?canceled=1`
   }
   if (order.customer_email) params.customer_email = order.customer_email
   if (collectShipping) {
@@ -236,6 +241,28 @@ export async function refundOrder(paymentIntentId) {
     [paymentIntentId],
   )
   return { changed: rowCount > 0 }
+}
+
+// The customer stepped back out of the pay box. Close the Stripe session and free the reserved copies.
+// If Stripe says the session is already complete, the webhook is about to mark it paid, so we leave it alone.
+export async function cancelOrder(orderId, userId) {
+  const {
+    rows: [order],
+  } = await query('select id, status, stripe_checkout_session_id from orders where id = $1 and user_id = $2', [Number(orderId), userId])
+  if (!order) throw httpError(404, 'Order not found.')
+  if (order.status !== 'pending') return { status: order.status, changed: false }
+
+  if (stripe && order.stripe_checkout_session_id) {
+    try {
+      await stripe.checkout.sessions.expire(order.stripe_checkout_session_id)
+    } catch (err) {
+      const session = await stripe.checkout.sessions.retrieve(order.stripe_checkout_session_id).catch(() => null)
+      if (session?.status === 'complete') return { status: 'pending', changed: false }
+      if (session && session.status !== 'expired') throw err
+    }
+  }
+  const result = await expireOrder(order.id, 'cancelled')
+  return { status: 'cancelled', changed: result.changed }
 }
 
 // Used when Stripe refused to create the session: undo the reservation so the customer can try again.

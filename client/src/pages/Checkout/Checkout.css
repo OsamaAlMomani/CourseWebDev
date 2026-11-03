@@ -1,0 +1,118 @@
+/* ==============================================================================
+   CHECKOUT BACKDROP (the living background behind the four boxes)
+   ==============================================================================
+
+   USED BY   pages/Checkout/CheckoutBackdrop.jsx (rendered inside CheckoutPage)
+
+   One "scene" per situation. The scene that matches the box you are working in fades in
+   (opacity only) and the old one fades out, so the whole page changes mood as you move on.
+   Everything that moves only changes transform and/or opacity (same rule as styles/animations.css),
+   and the colours come from the brand tokens, so the Night theme gets its own darker version for free.
+
+   CLASS INDEX
+     .co-stage     the layer behind the page content (never takes clicks)
+     .co-scene     one mood. data-scene = books | delivery | pay | wait | paid | problem
+     .co-wash      soft colour wash + top light (painted once, never repainted)
+     .co-rays      huge slow-turning beams of light
+     .co-blob      big soft light blobs that drift (three variants a / b / c)
+     .co-grid      the maths-plane grid sliding diagonally, one tile at a time so it loops without a jump
+     .co-spark     little stars that twinkle
+     .co-confetti  pieces that fall once the payment is confirmed
+   ============================================================================== */
+
+.co-stage { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+
+.co-scene {
+  position: absolute; inset: 0;
+  opacity: 0; visibility: hidden;
+  transition: opacity calc(1.4s * var(--dur-scale, 1)) var(--ease-smooth, ease), visibility 0s linear calc(1.4s * var(--dur-scale, 1));
+}
+.co-scene[data-on="true"] { opacity: 1; visibility: visible; transition-delay: 0s; }
+/* a scene nobody can see should not keep the GPU busy */
+.co-scene:not([data-on="true"]) * { animation-play-state: paused !important; }
+
+/* ---- the mood of each scene: three light colours ---- */
+.co-scene[data-scene="books"]    { --c1: var(--color-blue);  --c2: var(--color-lavender); --c3: var(--color-mint); }
+.co-scene[data-scene="delivery"] { --c1: var(--color-mint);  --c2: var(--color-blue);     --c3: var(--color-sun); }
+.co-scene[data-scene="pay"]      { --c1: var(--color-sun);   --c2: var(--color-coral);    --c3: var(--color-lavender); }
+.co-scene[data-scene="wait"]     { --c1: var(--color-sun);   --c2: var(--color-blue);     --c3: var(--color-lavender); }
+.co-scene[data-scene="paid"]     { --c1: var(--color-mint);  --c2: var(--color-sun);      --c3: var(--color-blue); }
+.co-scene[data-scene="problem"]  { --c1: var(--color-coral); --c2: var(--color-lavender); --c3: var(--color-sun); }
+
+/* ---- light: a wash of the scene colours with a bright glow at the top ---- */
+.co-wash {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(60% 45% at 50% -8%, color-mix(in oklch, var(--skin-surface) 85%, transparent), transparent 70%),
+    radial-gradient(110% 80% at 12% 0%, color-mix(in oklch, var(--c1) 42%, transparent), transparent 62%),
+    radial-gradient(100% 80% at 100% 100%, color-mix(in oklch, var(--c2) 38%, transparent), transparent 62%),
+    radial-gradient(70% 60% at 0% 100%, color-mix(in oklch, var(--c3) 30%, transparent), transparent 65%);
+}
+
+/* ---- beams of light turning very slowly ---- */
+.co-rays {
+  position: absolute; left: 50%; top: -35%;
+  width: 150vmax; height: 150vmax; margin-left: -75vmax;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0 6%,  color-mix(in oklch, var(--c1) 26%, transparent) 9%,  transparent 13% 30%,
+    color-mix(in oklch, var(--c2) 22%, transparent) 33%, transparent 37% 60%,
+    color-mix(in oklch, var(--c3) 24%, transparent) 63%, transparent 67% 100%);
+  -webkit-mask-image: radial-gradient(circle, #000 0, transparent 58%);
+          mask-image: radial-gradient(circle, #000 0, transparent 58%);
+  animation: co-spin calc(110s * var(--dur-scale, 1)) linear infinite;
+  will-change: transform;
+}
+
+/* ---- soft drifting blobs (a radial gradient that fades out looks like blur and costs nothing) ---- */
+.co-blob {
+  position: absolute; width: clamp(240px, 42vw, 560px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklch, var(--blob) 72%, transparent) 0, transparent 68%);
+  will-change: transform;
+}
+.co-blob-a { --blob: var(--c1); left: -8%;  top: -6%;   animation: co-drift-a calc(16s * var(--dur-scale, 1)) var(--ease-smooth, ease-in-out) infinite alternate both; }
+.co-blob-b { --blob: var(--c2); right: -10%; top: 18%;  animation: co-drift-b calc(20s * var(--dur-scale, 1)) var(--ease-smooth, ease-in-out) infinite alternate both; }
+.co-blob-c { --blob: var(--c3); left: 22%;  bottom: -14%; animation: co-drift-c calc(24s * var(--dur-scale, 1)) var(--ease-smooth, ease-in-out) infinite alternate both; }
+
+/* ---- the maths plane: bigger than the screen by one tile, slides one tile, jumps back unseen ---- */
+.co-grid {
+  position: absolute; inset: -120px; opacity: .55;
+  --u: 24px; --M: 120px;
+  animation: co-grid calc(28s * var(--dur-scale, 1)) linear infinite;
+  will-change: transform;
+}
+
+/* ---- stars ---- */
+.co-spark {
+  position: absolute; border-radius: 50%;
+  width: var(--s); height: var(--s);
+  background: color-mix(in oklch, var(--c1) 55%, white);
+  box-shadow: 0 0 calc(var(--s) * 2.5) color-mix(in oklch, var(--c1) 70%, white);
+  animation: twinkle calc(2.6s * var(--dur-scale, 1)) var(--ease-smooth, ease-in-out) var(--d) infinite alternate both;
+}
+
+/* ---- confetti once the payment is confirmed ---- */
+.co-confetti {
+  position: absolute; top: -4vh; left: var(--x);
+  width: var(--s); height: calc(var(--s) * 1.6); border-radius: 2px;
+  background: var(--piece);
+  animation: co-fall calc(var(--t) * var(--dur-scale, 1)) linear var(--d) infinite both;
+  will-change: transform, opacity;
+}
+
+@keyframes co-spin    { to { transform: rotate(360deg); } }
+@keyframes co-grid    { from { transform: translate3d(0,0,0); } to { transform: translate3d(120px,120px,0); } }
+@keyframes co-drift-a { from { transform: translate3d(0,0,0) scale3d(1,1,1); }        to { transform: translate3d(14vw,10vh,0) scale3d(1.25,1.25,1); } }
+@keyframes co-drift-b { from { transform: translate3d(0,0,0) scale3d(1.1,1.1,1); }    to { transform: translate3d(-16vw,12vh,0) scale3d(.9,.9,1); } }
+@keyframes co-drift-c { from { transform: translate3d(0,0,0) scale3d(.9,.9,1); }      to { transform: translate3d(12vw,-14vh,0) scale3d(1.2,1.2,1); } }
+@keyframes co-fall {
+  0%   { opacity: 0; transform: translate3d(0,0,0) rotate(0); }
+  8%   { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { opacity: 0; transform: translate3d(var(--dx), 112vh, 0) rotate(var(--r)); }
+}
+
+/* manual switch for slow devices (see styles/kill-switch.css): keep the colours, stop the motion */
+.skin-reduce-fx .co-rays, .skin-reduce-fx .co-blob, .skin-reduce-fx .co-grid,
+.skin-reduce-fx .co-spark, .skin-reduce-fx .co-confetti { animation: none !important; }
+.skin-reduce-fx .co-confetti { display: none; }

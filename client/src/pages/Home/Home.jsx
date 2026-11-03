@@ -2,6 +2,7 @@ import Hero from './Hero'
 import Chooser from './Chooser'
 import KidsBanner from './KidsBanner'
 import Marquee from './Marquee'
+import NewArrivals from './NewArrivals'
 import Perks from './Perks'
 import FeatureBook from './FeatureBook'
 import Watch from './Watch'
@@ -15,6 +16,7 @@ export default function Home() {
       <Chooser />
       <KidsBanner />
       <Marquee />
+      <NewArrivals />
       <Perks />
       <FeatureBook />
       <Watch />

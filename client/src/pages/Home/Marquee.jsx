@@ -10,7 +10,7 @@ export default function Marquee() {
   return (
     <div
       aria-hidden="true"
-      className="group overflow-hidden bg-ink-soft py-8 [-webkit-mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)] [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)] motion-reduce:overflow-x-auto"
+      className="ink-marquee group overflow-hidden bg-ink-soft py-8 [-webkit-mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)] [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)] motion-reduce:overflow-x-auto"
     >
       <div className="flex w-max animate-marquee-slow group-hover:[animation-play-state:paused] motion-reduce:animate-none">
         {loop.map((book, i) => (

@@ -20,6 +20,9 @@
      6. accessibility + kill switch (always last, so they can override anything)
    ============================================================================== */
 
+/* fonts: loaded once by <link> in index.html (Fraunces, Inter, IBM Plex Mono). An @import here would add a second,
+   render-blocking request chain, so there is none. */
+
 @import "tailwindcss";
 
 /* 2. global styles ---------------------------------------------------------- */
@@ -42,6 +45,7 @@
 
 /* 5. pages ------------------------------------------------------------------ */
 @import "./pages/Home/Home.css";
+@import "./pages/Home/NewArrivals.css";  /* the sideways "New arrivals" shelf */
 @import "./pages/Shelf/Shelf.css";
 @import "./pages/Account/Account.css";
 @import "./pages/Research/Research.css";
@@ -49,6 +53,9 @@
 
 /* 5b. the Night theme (colour overrides for every page, keep after the pages) */
 @import "./styles/theme-night.css";
+
+/* 5c. the INKWELL look (aurora, glass cards, gradient buttons, reveal): dark theme, after the night colours */
+@import "./styles/inkwell.css";
 
 /* 6. accessibility + kill switch (keep last) ------------------------------- */
 @import "./styles/accessibility.css";

@@ -64,6 +64,10 @@ export const config = {
   // ---- payments (Stripe). The secret key is only ever read here, on the server. ----
   stripeSecretKey: process.env.STRIPE_SECRET_KEY?.trim() || null,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET?.trim() || null,
+  // Publishable key (pk_test_...) is meant to be public. With it the pay box opens INSIDE the page (Embedded Checkout).
+  // Without it the shop falls back to sending the customer to Stripe's hosted page.
+  stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY?.trim() || null,
+  stripeUiMode: process.env.STRIPE_UI_MODE?.trim() || 'embedded',
   stripeCurrency: /^[a-z]{3}$/.test(currency) ? currency : 'usd',
   // Allow tests to point the Stripe SDK at a local stub. Never set these in production.
   stripeApiHost: process.env.STRIPE_API_HOST?.trim() || null,

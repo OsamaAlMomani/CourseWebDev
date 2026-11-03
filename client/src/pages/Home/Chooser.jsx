@@ -2,6 +2,7 @@ import { useCatalog } from '../../context/CatalogContext'
 import { themes } from '../../data/themes'
 import { cover } from '../../lib/asset'
 import Container from '../../shared/Container'
+import WaveText from '../../shared/WaveText'
 
 export default function Chooser() {
   const { groups, books } = useCatalog()
@@ -11,7 +12,7 @@ export default function Chooser() {
     <section id="choose" className="bg-paper [background-image:radial-gradient(rgba(15,109,187,0.10)_2px,transparent_2px)] [background-size:30px_30px] py-16 md:py-28">
       <Container>
         <div className="reveal mb-10 md:mb-14">
-          <h2 className="t-section">Find your shelf</h2>
+          <h2 className="t-section fx-weight"><WaveText text="Find your shelf" /></h2>
           <p className="t-lede mt-4">
             From teens to scientists, pick your level and everything is sorted for you. Shopping for a child? The Kids Corner is just below.
           </p>

@@ -3,6 +3,7 @@ import { themes } from '../../data/themes'
 import { cover } from '../../lib/asset'
 import PageHero, { fanOf } from '../../shared/PageHero/PageHero'
 import Button from '../../shared/Button'
+import CountUp from '../../shared/CountUp'
 
 // the five books in the fan on the home page
 const fanIds = ['glass-orbit', 'moon-bakery', 'cartographer', 'learning-machines', 'global-novel']
@@ -12,13 +13,13 @@ export default function Hero() {
   return (
     <PageHero
       id="top"
-      title={<>Books for <span className="text-blue">every reader,</span> delivered anywhere.</>}
+      title={<>Books for <span className="text-blue fx-color">every reader,</span> delivered anywhere.</>}
       intro="Picture books to textbooks. Shipped to over 180 countries."
       covers={fanOf(fanIds.map(cover), 80)}
       extra={
         // sticker
         <div className="absolute top-0 right-0 z-10 grid size-24 rotate-12 place-content-center rounded-full bg-coral text-center font-display leading-none font-extrabold text-ink md:size-32 lg:right-2">
-          <span className="text-3xl md:text-4xl">180+</span>
+          <span className="text-3xl md:text-4xl"><CountUp to={180} suffix="+" /></span>
           <span className="text-sm md:text-base">countries</span>
         </div>
       }

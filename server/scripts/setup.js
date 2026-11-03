@@ -72,6 +72,7 @@ PORT=4000
 
 # Stripe TEST mode (optional to start, required for checkout). See docs/STRIPE.md
 STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
 STRIPE_CURRENCY=usd
 `,

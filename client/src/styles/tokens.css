@@ -12,8 +12,9 @@
                          redefine them (see data-skin in App.jsx) and every card, button and
                          input follows, because they only read var(--skin-*).
 
-   Rules of the house: no backdrop-filter, no filter: blur, no content-visibility. Everything
-   that animates uses transform / opacity so it stays on the GPU and the page stays smooth.
+   Rules of the house: animate transform / opacity only. The INKWELL look (styles/inkwell.css) is the one
+   deliberate exception: it uses a blurred aurora and glass panels, and every heavy effect switches off
+   under prefers-reduced-motion / prefers-reduced-transparency and the .skin-reduce-fx kill switch.
 
    CLASS INDEX
      @theme            brand colours, fonts, easing curves, --animate-* shortcuts
@@ -35,8 +36,8 @@
   --color-muted:    #5a7490;
   --color-line:     #d6e6f5;
 
-  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-  --font-body:    "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-body:    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --motion-base:  4s;
@@ -149,6 +150,19 @@
   --soft-ease:     cubic-bezier(0.22, 0.61, 0.36, 1);
   --soft-ease-out: cubic-bezier(0.32, 0.72, 0, 1);
   --soft-ring:     rgba(47,116,168,0.20);
+}
+
+/* ---- 3b. INKWELL TOKENS: the raw palette of the aurora look (styles/inkwell.css reads these) ------ */
+:root {
+  --ink-bg:     #07070c;
+  --ink-cream:  #f4efe6;
+  --ink-muted:  #9a94a8;
+  --ink-amber:  #f5b971;
+  --ink-rose:   #fda4af;
+  --ink-violet: #a78bfa;
+  --ink-teal:   #5eead4;
+  --ink-line:   rgba(255,255,255,.09);
+  --ink-ease:   cubic-bezier(.2,.8,.3,1);
 }
 
 /* ---- 4. CUSTOM VARIANTS ------------------------------------------------------ */

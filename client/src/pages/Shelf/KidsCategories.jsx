@@ -6,9 +6,9 @@ const colours = [
   'bg-sun text-ink',
   'bg-coral text-ink',
   'bg-mint text-ink',
-  'bg-[#bfe0fb] text-ink dark:bg-[#1b3a5c]',
-  'bg-[#ffd9d5] text-ink dark:bg-[#4a2a30]',
-  'bg-[#d6f5ea] text-ink dark:bg-[#1c4437]',
+  'bg-[#bfe0fb] text-ink dark:bg-[#241b4a]',
+  'bg-[#ffd9d5] text-ink dark:bg-[#4a2540]',
+  'bg-[#d6f5ea] text-ink dark:bg-[#143d38]',
 ]
 
 // The Kids Corner's own menu: one big tile per kind of book. Clicking one filters the shelf below.

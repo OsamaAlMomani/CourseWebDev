@@ -141,7 +141,7 @@ export default function Header({ route, skin, world }) {
       {/* TOP ROW: everything in ONE row, split into clear sections (logo | account | tools | cart | contact).
           On a phone the account links and the tools fold into the burger menu instead. */}
       <Container className="flex min-h-16 items-center justify-between gap-2.5">
-        <a href="#/" className="text-[1.15rem] font-extrabold tracking-[-0.02em] min-[360px]:text-[1.4rem] font-display">
+        <a href="#/" className="ink-logo text-[1.15rem] font-extrabold tracking-[-0.02em] min-[360px]:text-[1.4rem] font-display">
           Global<span className={theme.logoAccent}>Books</span>
           {kidsWorld && (
             <span className="ml-1.5 rounded-full bg-sun px-2 py-0.5 align-middle text-[0.65em] font-extrabold text-ink">

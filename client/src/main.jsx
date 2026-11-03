@@ -4,11 +4,15 @@ import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './shared/ErrorBoundary'
 import { initTheme } from './lib/theme'
+import { initInkwellFx } from './lib/inkwellFx'
 import { CatalogProvider } from './context/CatalogContext'
 import { ShopProvider } from './context/ShopContext'
 
 // light or dark? decided before anything is drawn
 initTheme()
+
+// reveal-on-scroll, card tilt, magnetic buttons (the INKWELL behaviour that has no component)
+initInkwellFx()
 
 // Providers = "global memory" that any component below can read.
 // Catalog first (books never depend on the user), Shop second (cart, wishlist, sign-in).

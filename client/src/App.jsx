@@ -8,6 +8,7 @@ import ChatFab from './layout/ChatFab/ChatFab'
 import AuthDialog from './layout/AuthDialog/AuthDialog'
 import CartDrawer from './layout/CartDrawer/CartDrawer'
 import Toast from './layout/Toast/Toast'
+import InkwellBackground from './layout/InkwellBackground/InkwellBackground'
 import { SkinProvider } from './context/SkinContext'
 
 export default function App() {
@@ -67,6 +68,8 @@ export default function App() {
   return (
     <SkinProvider value={skin}>
       <div data-skin={skin}>
+        {/* aurora, particles, spotlight, grain and the side rail (Night theme only; renders nothing in the light theme) */}
+        <InkwellBackground />
         <a
           href="#main"
           className="absolute -left-[999px] top-0 z-[200] bg-sun px-4 py-2.5 text-ink focus:left-0"

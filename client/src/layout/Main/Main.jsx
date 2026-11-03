@@ -5,26 +5,30 @@ import AccountPage from '../../pages/Account/AccountPage'
 import AudiencePage from '../../pages/Shelf/AudiencePage'
 import MotionLab from '../../pages/MotionLab/MotionLab'
 import ResearchPage from '../../pages/Research/ResearchPage'
-import OrderSuccessPage from '../../pages/Order/OrderSuccessPage'
+import CheckoutPage from '../../pages/Checkout/CheckoutPage'
 import { scrollToContactIfAsked } from '../../lib/contactLink'
 import ErrorBoundary from '../../shared/ErrorBoundary'
 
 // The router outlet: shows the home page, or the page for whichever group is in the address.
-// Extra pages use a small prefix: #/order/12 (the payment confirmation).
+// Checkout is one screen of step boxes: #/checkout (cart), #/checkout?book=ID (Buy now), #/checkout/12 (back from Stripe).
+// #/order/12 is the old return address of Stripe's hosted page and opens the same screen on its last box.
 export default function Main({ route }) {
   const { groups } = useCatalog()
   const group = groups.find((g) => g.id === route) // undefined means home
   const isAccount = route === 'account'
   const isLab = route === 'motion-lab'
-  const orderMatch = route.match(/^order\/(\d+)$/)
-  const orderId = orderMatch ? Number(orderMatch[1]) : null
+  const flowMatch = route.match(/^(?:checkout|order)(?:\/(\d+))?$/)
+  const isCheckout = Boolean(flowMatch)
+  const orderId = flowMatch?.[1] ? Number(flowMatch[1]) : null
   const isResearch = group?.id === 'scientists' // the scientists shelf became the Research & Book news portal
 
   // when the page changes: back to the top, and a title that matches
   const first = useRef(true)
   useEffect(() => {
-    document.title = orderId
-      ? `Order #${orderId} | GlobalBooks`
+    document.title = isCheckout
+      ? orderId
+        ? `Order #${orderId} | GlobalBooks`
+        : 'Checkout | GlobalBooks'
       : isResearch
         ? 'Research & Book | GlobalBooks'
         : isLab
@@ -41,7 +45,7 @@ export default function Main({ route }) {
     // arriving from the Contact button on another page: glide to the form instead of the top
     if (scrollToContactIfAsked()) return
     window.scrollTo({ top: 0, behavior: 'instant' })
-  }, [group, isAccount, isLab, isResearch, orderId])
+  }, [group, isAccount, isLab, isResearch, isCheckout, orderId])
 
   return (
     <main id="main">
@@ -53,8 +57,8 @@ export default function Main({ route }) {
           <ResearchPage />
         ) : isAccount ? (
           <AccountPage />
-        ) : orderId ? (
-          <OrderSuccessPage orderId={orderId} />
+        ) : isCheckout ? (
+          <CheckoutPage orderId={orderId} />
         ) : group ? (
           <AudiencePage key={group.id} group={group} />
         ) : (

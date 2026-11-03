@@ -25,17 +25,18 @@ export default function BookCard({ book, theme }) {
     }
   }
 
-  // Straight to Stripe with just this book. The address is collected on Stripe's secure page.
+  // Opens the checkout boxes (books, delivery, pay, done) with just this book.
   async function handleBuyNow() {
     if (paying) return
     setPaying(true)
     const started = await buyNow(book, copies)
-    if (!started) setPaying(false) // signed out or the server refused; the dialog/toast explains
+    if (!started) setPaying(false) // signed out: the sign-in dialog explains
+    else window.setTimeout(() => setPaying(false), 800)
   }
 
   return (
     <article
-      className={`relative flex min-w-0 shrink-0 basis-[min(80vw,300px)] snap-start flex-col overflow-hidden min-[360px]:basis-[min(76vw,300px)] sm:basis-auto ${theme.card}`}
+      className={`ink-reveal relative flex min-w-0 shrink-0 basis-[min(80vw,300px)] snap-start flex-col overflow-hidden min-[360px]:basis-[min(76vw,300px)] sm:basis-auto ${theme.card}`}
     >
       {/* heart: save for later (asks you to sign in first if you are not) */}
       <button
@@ -99,7 +100,7 @@ export default function BookCard({ book, theme }) {
             onClick={handleBuyNow}
             className="skin-btn skin-btn-soft min-h-11 text-base font-bold"
           >
-            {paying ? 'Opening Stripe…' : 'Buy now'}
+            {paying ? 'Opening checkout…' : 'Buy now'}
             <span className="sr-only"> — pay for {book.title} now</span>
           </button>
         </div>

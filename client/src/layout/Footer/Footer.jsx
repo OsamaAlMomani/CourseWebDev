@@ -20,10 +20,10 @@ export default function Footer() {
   return (
     <footer className="bg-skin-foot pb-[calc(5rem_+_env(safe-area-inset-bottom,0px))] text-skin-foot-ink">
       {/* one stripe, one colour per reader group */}
-      <div aria-hidden="true" className="mb-16 h-1.5 bg-[linear-gradient(90deg,#8fd0ff,#cfe8ff_50%,#ffb4ae)]" />
+      <div aria-hidden="true" className="footer-stripe mb-16 h-1.5" />
       <Container className="mb-7 grid grid-cols-[minmax(0,1fr)] gap-7 sm:grid-cols-[2fr_1fr_1fr]">
         <div>
-          <h3 className="mb-3 font-skin text-3xl font-extrabold text-ink">Global<span className="text-skin-foot-pop">Books</span></h3>
+          <h3 className="ink-logo mb-3 font-skin text-3xl font-extrabold text-ink">Global<span className="ink-accent text-skin-foot-pop">Books</span></h3>
           <p>Your worldwide bookstore. Stories and knowledge across borders.</p>
         </div>
         <div>
