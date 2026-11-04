@@ -9,9 +9,10 @@ src/
 ├── main.jsx, App.jsx    Starts the app; App picks the page from the address (#/...)
 │
 ├── styles/              GLOBAL CSS (no JSX): the same on every page
-│   ├── tokens.css        colours, fonts, easing, skin variables (the light theme)
+│   ├── tokens.css        colours, fonts, easing, skin variables (the base values; both themes override them)
 │   ├── theme-night.css   the Night theme = the INKWELL palette (ink-black, cream, amber / rose / violet), under html[data-theme="dark"]. The DEFAULT theme.
-│   ├── inkwell.css      the INKWELL look: aurora layers, glass cards, gradient buttons, shimmer headings, reveal. Dark theme only (fonts + .rise apply to both)
+│   ├── inkwell.css      the INKWELL look: aurora layers, glass cards, gradient buttons, shimmer headings, reveal. Dark theme only (fonts, .rise, .fx-* text effects apply to both)
+│   ├── theme-glass.css  the LIGHT GLASS theme under html[data-theme="light"]: pearl page, pastel aurora, frosted panels, reflections, glossy headings
 │   ├── animations.css    @keyframes
 │   ├── base.css          html/body defaults, focus ring, gutters
 │   ├── ui-kit.css        .skin-card  .skin-btn*  .skin-input
@@ -24,7 +25,7 @@ src/
 │
 ├── layout/              The app shell that is on every page
 │   ├── Header/           Header.jsx, SlidingTabs.jsx, Header.css
-│   ├── InkwellBackground/ aurora, particle canvas, cursor spotlight, vignette, grain, and the side scroll rail (Night theme only)
+│   ├── InkwellBackground/ aurora, particle canvas, cursor spotlight, window-pane sheen (light only), vignette, grain, and the side scroll rail (both themes)
 │   ├── Footer/  CartDrawer/  AuthDialog/  Toast/  ChatFab/
 │   └── Main/             Main.jsx: shows the page for the current route
 │
@@ -53,8 +54,9 @@ src/
 
 ## The INKWELL look (what is where)
 
-* **Default theme is Night = INKWELL.** `lib/theme.js` starts in dark; the header button switches to the light (sky-blue) theme and the choice is remembered.
-* **Colours** are only variables: `styles/theme-night.css` (dark) and `styles/tokens.css` (light + the raw `--ink-*` palette).
+* **Default theme is Night = INKWELL.** `lib/theme.js` starts in dark; the header button switches to the light glass theme and the choice is remembered.
+* **Colours** are only variables: `styles/theme-night.css` (dark), `styles/theme-glass.css` section 1 (light) and `styles/tokens.css` (base values + the raw `--ink-*` palette).
 * **Effects** are in `styles/inkwell.css`. It is deliberately NOT in a cascade layer, so it beats Tailwind utilities without `!important`.
 * **No JSX knows about the tilt / glow / magnetic effect.** `lib/inkwellFx.js` listens on the whole page: give an element `.card-lift`, `.skin-btn`, `.ink-hero` or `.reveal` / `.ink-reveal` and it just works.
+* **The light glass theme** (`styles/theme-glass.css`) is the daytime twin of Night. Glass recipe = the `--gl-*` variables at the top of that file (fill, blur, edge, shadow): change them once and every pane follows. Reflections: `.ink-sheen` (page-wide band of light), `.card-lift::after` (corner glare + hover sweep), `.card-lift::before` (light under the pointer), `.t-display` / `.t-section` (the glossy band that slides through heading letters, `gl-gloss`), `.t-card-title` (flashes the band on hover). Pointer tilt and magnetic buttons (`lib/inkwellFx.js`) run in both themes.
 * **Turning the heavy parts off:** `prefers-reduced-motion`, `prefers-reduced-transparency`, or `document.body.classList.add('skin-reduce-fx')`.

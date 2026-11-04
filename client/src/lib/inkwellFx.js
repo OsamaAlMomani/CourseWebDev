@@ -7,12 +7,12 @@
 //   .skin-btn               leans toward the pointer (magnetic)
 //   .ink-hero               its .ink-tilt child (the cover fan) turns slightly with the pointer (sets --rx --ry)
 //
-// The pointer effects only run on devices with a real mouse, in the Night theme, and when the visitor did not ask for less motion.
+// The pointer effects only run on devices with a real mouse and when the visitor did not ask for less motion. They run in both
+// themes: Night draws them as an amber glow (styles/inkwell.css), Light as a white reflection (styles/theme-glass.css).
 // The reveal always runs (it is harmless in the light theme: only the dark CSS hides elements before .in).
 
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const hasMouse = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches
-const isDark = () => document.documentElement.dataset.theme !== 'light'
 
 const REVEAL = '.reveal, .ink-reveal'
 
@@ -92,7 +92,7 @@ function startPointerFx() {
   document.addEventListener(
     'pointermove',
     (e) => {
-      if (e.pointerType !== 'mouse' || !hasMouse() || reduced() || !isDark()) return
+      if (e.pointerType !== 'mouse' || !hasMouse() || reduced()) return
       const target = e.target instanceof Element ? e.target : null
 
       // card tilt + glow (reference section 6). Wide cards tilt less, so a big banner does not swing.

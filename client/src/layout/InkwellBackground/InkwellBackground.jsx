@@ -4,7 +4,8 @@ import useTheme from '../../lib/theme'
 // The INKWELL background (reference sections 1 and 10): aurora glow, floating page / glyph particles that
 // the cursor pushes away, a spotlight that follows the cursor, a vignette, film grain, and the side rail
 // that shows how far down the page you are. CSS for all of it is in styles/inkwell.css (.ink-fx, .side-rail).
-// Only drawn in the Night theme. In the light theme this renders nothing and no loop runs.
+// Drawn in both themes: Night is the amber / rose / violet aurora on ink-black, Light is the same scene in daylight
+// colours (styles/theme-glass.css) with one extra layer, .ink-sheen, the slow reflection that crosses the page.
 
 const GLYPHS = ['✦', '✧', '❝', '❞', '⁂', '§', '¶', '❦', '※', '✶', '⌘', '◈']
 const rand = (a, b) => a + Math.random() * (b - a)
@@ -24,7 +25,13 @@ function roundRectPath(c, x, y, w, h, r) {
   c.closePath()
 }
 
-function Layers() {
+function Layers({ theme }) {
+  // the particles are painted on a canvas, so CSS cannot recolour them: the loop reads the theme from here
+  const themeRef = useRef(theme)
+  useEffect(() => {
+    themeRef.current = theme
+  }, [theme])
+
   const canvasRef = useRef(null)
   const spotRef = useRef(null)
   const fillRef = useRef(null)
@@ -101,6 +108,7 @@ function Layers() {
     // k = how many 60 fps frames passed since the last draw, so motion keeps its speed when we draw less often
     function draw(k) {
       ctx.clearRect(0, 0, W, H)
+      const light = themeRef.current === 'light' // pale glyphs vanish on a pale page, so Light paints them deeper
       for (const p of parts) {
         p.wob += p.wobSpeed * k
         p.x += (p.vx + Math.sin(p.wob) * 0.24) * k
@@ -134,16 +142,16 @@ function Layers() {
           ctx.font = `${p.size}px 'Fraunces', Georgia, serif`
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillStyle = `hsla(${p.hue}, 82%, 82%, ${p.alpha})`
+          ctx.fillStyle = light ? `hsla(${p.hue}, 70%, 52%, ${p.alpha * 0.8})` : `hsla(${p.hue}, 82%, 82%, ${p.alpha})`
           ctx.fillText(p.glyph, 0, 0)
         } else {
           // a tiny book: a page with a spine line
           const w = p.size * 0.62
           const h = p.size
-          ctx.fillStyle = `hsla(${p.hue}, 62%, 90%, ${p.alpha})`
+          ctx.fillStyle = light ? `hsla(${p.hue}, 80%, 66%, ${p.alpha * 1.8})` : `hsla(${p.hue}, 62%, 90%, ${p.alpha})`
           roundRectPath(ctx, -w / 2, -h / 2, w, h, 1.6)
           ctx.fill()
-          ctx.strokeStyle = `hsla(${p.hue}, 70%, 66%, ${p.alpha * 1.9})`
+          ctx.strokeStyle = light ? `hsla(${p.hue}, 60%, 44%, ${p.alpha * 1.6})` : `hsla(${p.hue}, 70%, 66%, ${p.alpha * 1.9})`
           ctx.lineWidth = 1
           ctx.beginPath()
           ctx.moveTo(-w / 2 + 2.2, -h / 2)
@@ -159,7 +167,7 @@ function Layers() {
         for (const p of parts) {
           const d = Math.hypot(p.x - mouse.x, p.y - mouse.y)
           if (d < R) {
-            ctx.strokeStyle = `rgba(245,185,113,${(1 - d / R) * 0.32})`
+            ctx.strokeStyle = light ? `rgba(106,77,224,${(1 - d / R) * 0.30})` : `rgba(245,185,113,${(1 - d / R) * 0.32})`
             ctx.lineWidth = 1
             ctx.beginPath()
             ctx.moveTo(p.x, p.y)
@@ -253,6 +261,7 @@ function Layers() {
         </div>
         <canvas ref={canvasRef} className="ink-canvas" />
         <div ref={spotRef} className="ink-spotlight" />
+        <div className="ink-sheen" />
         <div className="ink-vignette" />
         <div className="ink-grain" />
       </div>
@@ -268,6 +277,5 @@ function Layers() {
 }
 
 export default function InkwellBackground() {
-  const dark = useTheme() === 'dark'
-  return dark ? <Layers /> : null
+  return <Layers theme={useTheme()} />
 }

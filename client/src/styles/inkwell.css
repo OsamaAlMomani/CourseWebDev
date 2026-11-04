@@ -10,8 +10,9 @@
      The Night theme (html[data-theme="dark"]) now wears the INKWELL palette (tokens in theme-night.css).
      This file adds everything that a colour variable cannot do: the aurora background, the glass
      cards, the gradient buttons, the pointer glow, the shimmer headings, the reveal-on-scroll.
-     Every effect is limited to the dark theme, so the light (sky-blue) theme is unchanged.
-     The only two things that apply in BOTH themes are the fonts / heading weights and .rise.
+     Every effect here is limited to the dark theme. The light theme has its own glass version of the same look
+     in styles/theme-glass.css. The things that apply in BOTH themes are the fonts / heading weights, .rise,
+     the .fx-* text effects, the shared keyframes and the background layers' positions (colours differ per theme).
 
    HOW IT MAPS ONTO THE REFERENCE HTML
      reference .bg-aurora .bg-canvas .bg-spotlight .bg-vignette .bg-grain   ->  .ink-fx > *

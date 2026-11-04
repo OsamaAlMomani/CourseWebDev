@@ -68,7 +68,7 @@ export default function App() {
   return (
     <SkinProvider value={skin}>
       <div data-skin={skin}>
-        {/* aurora, particles, spotlight, grain and the side rail (Night theme only; renders nothing in the light theme) */}
+        {/* aurora, particles, spotlight, grain and the side rail (both themes; the light one is the glass version) */}
         <InkwellBackground />
         <a
           href="#main"

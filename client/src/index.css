@@ -9,7 +9,8 @@
    Tailwind v4 reads @theme / @custom-variant and the cascade-layer order from the
    file that imports it. Listing everything here keeps one fixed order, in one place.
 
-   THEMES: light is the default (tokens.css). Night is a set of overrides under html[data-theme="dark"] in styles/theme-night.css.
+   THEMES: Night (INKWELL) is the default. Both themes are colour overrides on top of the tokens.css base:
+           Night = html[data-theme="dark"] in styles/theme-night.css, Light = the glass theme, html[data-theme="light"] in styles/theme-glass.css.
 
    ORDER MATTERS (later wins when two rules have the same weight):
      1. Tailwind itself
@@ -56,6 +57,9 @@
 
 /* 5c. the INKWELL look (aurora, glass cards, gradient buttons, reveal): dark theme, after the night colours */
 @import "./styles/inkwell.css";
+
+/* 5d. the LIGHT GLASS theme (frosted panels, reflections, glossy headings): light theme, after INKWELL */
+@import "./styles/theme-glass.css";
 
 /* 6. accessibility + kill switch (keep last) ------------------------------- */
 @import "./styles/accessibility.css";

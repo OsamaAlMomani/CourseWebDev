@@ -1,10 +1,9 @@
 import { themes } from '../../data/themes'
 import Container from '../Container'
-import BackgroundVideo from '../BackgroundVideo'
-import useTheme from '../../lib/theme'
 
 // ONE hero for the whole site (home, the five shelves, Research & Book).
-// Same background video, same light wash, same dot pattern, same title size, same floating covers.
+// Same title size, same floating covers, and the same background: the hero sits straight on the aurora behind the whole
+// site (no video, no wash, no dots), in the Night theme and in the light glass theme alike.
 // Only the words and the covers change from page to page.
 //
 //   kicker   small pill above the title (optional)
@@ -23,20 +22,6 @@ export function fanOf(srcs, gap = 95) {
     const spot = i - mid // negative = left of centre
     return { src, x: spot * gap, r: spot * 9, z: 10 - Math.round(Math.abs(spot) * 2), delay: -i * 1.2 }
   })
-}
-
-// The moving background: video, a light wash so dark text stays readable, then the dot pattern on top.
-// In the Night theme (INKWELL) none of it is drawn: the hero sits straight on the aurora behind the whole site.
-function HeroBackdrop() {
-  const dark = useTheme() === 'dark'
-  if (dark) return null
-  return (
-    <>
-      <BackgroundVideo src={theme.heroVideo} poster={theme.heroPoster} className={theme.heroVideoCls} buttonClass={theme.videoBtn} />
-      <div aria-hidden="true" className={`absolute inset-0 -z-10 ${theme.heroShade}`} />
-      <div aria-hidden="true" className={`absolute inset-0 -z-10 ${theme.heroPattern}`} />
-    </>
-  )
 }
 
 // The covers that float up and down. --x / --r / --z / --delay are read by .fan-cover (PageHero.css) and the float keyframes (styles/animations.css).
@@ -69,7 +54,6 @@ export default function PageHero({ id, kicker, title, intro, actions, covers = [
       id={id}
       className={`ink-hero relative isolate overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 lg:flex lg:min-h-[80svh] lg:items-center short-landscape:pt-6 short-landscape:pb-8 ${theme.font} ${theme.heroBg}`}
     >
-      <HeroBackdrop />
       <Container className={`grid grid-cols-[minmax(0,1fr)] gap-12 short-landscape:grid-cols-[minmax(0,1fr)] ${covers.length ? 'lg:grid-cols-[1.1fr_1fr] lg:items-center' : ''}`}>
         <div>
           {kicker && <p className={`rise d1 mb-6 ${theme.kicker}`}>{kicker}</p>}
