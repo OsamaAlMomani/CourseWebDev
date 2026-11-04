@@ -61,6 +61,9 @@
 /* 5d. the LIGHT GLASS theme (frosted panels, reflections, glossy headings): light theme, after INKWELL */
 @import "./styles/theme-glass.css";
 
+/* 5e. PERFORMANCE: the single-layer aurora, the quality levels, animation only while visible (both themes) */
+@import "./styles/perf.css";
+
 /* 6. accessibility + kill switch (keep last) ------------------------------- */
 @import "./styles/accessibility.css";
 @import "./styles/kill-switch.css";

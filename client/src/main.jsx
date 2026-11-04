@@ -5,11 +5,15 @@ import App from './App.jsx'
 import ErrorBoundary from './shared/ErrorBoundary'
 import { initTheme } from './lib/theme'
 import { initInkwellFx } from './lib/inkwellFx'
+import { initQuality } from './lib/quality'
 import { CatalogProvider } from './context/CatalogContext'
 import { ShopProvider } from './context/ShopContext'
 
 // light or dark? decided before anything is drawn
 initTheme()
+
+// how heavy the effects are (full / lite / min): weak devices start light, slow frames step it down
+initQuality()
 
 // reveal-on-scroll, card tilt, magnetic buttons (the INKWELL behaviour that has no component)
 initInkwellFx()

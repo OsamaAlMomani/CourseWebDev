@@ -11,6 +11,8 @@
 // themes: Night draws them as an amber glow (styles/inkwell.css), Light as a white reflection (styles/theme-glass.css).
 // The reveal always runs (it is harmless in the light theme: only the dark CSS hides elements before .in).
 
+import { getTier } from './quality'
+
 const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const hasMouse = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches
 
@@ -92,7 +94,7 @@ function startPointerFx() {
   document.addEventListener(
     'pointermove',
     (e) => {
-      if (e.pointerType !== 'mouse' || !hasMouse() || reduced()) return
+      if (e.pointerType !== 'mouse' || !hasMouse() || reduced() || getTier() !== 'full') return
       const target = e.target instanceof Element ? e.target : null
 
       // card tilt + glow (reference section 6). Wide cards tilt less, so a big banner does not swing.
@@ -144,9 +146,35 @@ function startPointerFx() {
   window.addEventListener('blur', resetAll)
 }
 
+// Looping text effects (the glossy heading band, the shimmering accent words, the pulsing eyebrow dot) only run while
+// they are on screen: this adds .fx-live to them when visible, and styles/perf.css pauses the animation without it.
+const LIVE = '.t-display, .t-section, .t-eyebrow, .fx-color, .fx-wave, .ink-logo, .sideways-title'
+
+function startLiveWatch() {
+  if (typeof IntersectionObserver === 'undefined') return // no observer: perf.css never pauses anything
+  const io = new IntersectionObserver(
+    (entries) => entries.forEach((e) => e.target.classList.toggle('fx-live', e.isIntersecting)),
+    { rootMargin: '80px 0px' },
+  )
+  const seen = new WeakSet()
+  const watch = (el) => {
+    if (seen.has(el)) return
+    seen.add(el)
+    io.observe(el)
+  }
+  const scan = (root) => {
+    if (root.matches?.(LIVE)) watch(root)
+    root.querySelectorAll?.(LIVE).forEach(watch)
+  }
+  scan(document)
+  new MutationObserver((list) => list.forEach((m) => m.addedNodes.forEach((n) => n.nodeType === 1 && scan(n)))).observe(document.body, { childList: true, subtree: true })
+  document.documentElement.dataset.fxWatch = 'on'
+}
+
 export function initInkwellFx() {
   if (window.__inkwellFx) return // StrictMode / hot reload: start once
   window.__inkwellFx = true
   startReveal()
   startPointerFx()
+  startLiveWatch()
 }

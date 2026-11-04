@@ -1,0 +1,87 @@
+/* ==============================================================================
+   PERFORMANCE LAYER (both themes)
+   ==============================================================================
+
+   USED BY   every page. Imported after the two theme files (see index.css).
+             The levels come from lib/quality.js (<html data-fx="full|lite|min">);
+             "animation off-screen" comes from lib/inkwellFx.js (adds .fx-live to what is on screen).
+
+   WHAT IT DOES
+     1. ONE aurora layer. There used to be four blurred blobs, each its own animated layer with its own blend.
+        Now the four glows are four radial gradients on the single .ink-aurora element, which drifts slowly with
+        transform only. The glows are smooth (nothing finer than ~300 px), so nothing visible is lost.
+     2. Quality levels. lite = no sheen, no spotlight, static aurora, no card reflections.
+        min = the .skin-reduce-fx kill switch (hides all background layers) plus the looping text effects stop.
+     3. Animation only while it can be seen. Looping text effects (headings, logo, accent words, eyebrow dot) pause
+        when they scroll off screen, so the page only ever animates what is in view.
+     4. Hover effects only on devices that can hover (no sticky tilt after a tap on a phone).
+     5. The footer and newsletter (always far down the page) are not drawn until you get near them.
+
+   Not inside a cascade layer on purpose (see the note at the top of styles/inkwell.css).
+   ============================================================================== */
+
+/* ---- 1. one aurora layer ---------------------------------------------------- */
+/* inset is -30% in inkwell.css, so the box is 160% of the screen; the screen is the middle 62.5% of it,
+   which is why the glow centres below are not the same numbers as where they appear on screen */
+.ink-aurora span { display: none; }
+.ink-aurora {
+  --aur-1: rgba(245, 185, 113, .55);   /* amber  */
+  --aur-2: rgba(167, 139, 250, .50);   /* violet */
+  --aur-3: rgba(94, 234, 212, .32);    /* teal   */
+  --aur-4: rgba(244, 114, 182, .34);   /* rose   */
+  background:
+    radial-gradient(circle 40vmax at 32% 36%, var(--aur-1), transparent 70%),
+    radial-gradient(circle 46vmax at 74% 25%, var(--aur-2), transparent 70%),
+    radial-gradient(circle 38vmax at 47% 78%, var(--aur-3), transparent 70%),
+    radial-gradient(circle 32vmax at 69% 75%, var(--aur-4), transparent 70%);
+  mix-blend-mode: screen;
+  will-change: transform;
+  animation: ink-aurora-drift 48s ease-in-out infinite alternate;
+}
+html[data-theme="light"] .ink-aurora {
+  --aur-1: rgba(255, 184, 110, .78);
+  --aur-2: rgba(160, 130, 250, .68);
+  --aur-3: rgba(100, 225, 205, .58);
+  --aur-4: rgba(250, 135, 175, .56);
+  mix-blend-mode: normal;
+}
+@keyframes ink-aurora-drift {
+  from { transform: translate3d(-3%, 2%, 0) scale(1); }
+  to   { transform: translate3d(3%, -3%, 0) scale(1.08); }
+}
+
+/* ---- 2. quality levels ------------------------------------------------------- */
+html[data-fx="lite"] .ink-sheen,
+html[data-fx="lite"] .ink-spotlight { display: none; }
+html[data-fx="lite"] .ink-aurora { animation: none; will-change: auto; }
+html[data-fx="lite"] .card-lift::before,
+html[data-fx="lite"] .card-lift::after { display: none; }
+html[data-fx="lite"] .card-lift:hover { transform: translateY(-4px); }
+
+/* min is body.skin-reduce-fx: the background layers are already hidden by inkwell.css; stop the looping text effects too */
+.skin-reduce-fx :is(.text-blue, .fx-color, .ink-accent, .fx-wave__char) { animation: none; }
+.skin-reduce-fx .t-eyebrow::before { animation: none; }
+
+/* ---- 3. loop only what is on screen -------------------------------------------
+   lib/inkwellFx.js adds .fx-live to these while they are visible. The attribute on <html> is only set when that watcher
+   is running, so a browser without IntersectionObserver never gets stuck with paused text. */
+html[data-fx-watch="on"] :is(.t-display, .t-section, .t-eyebrow, .fx-color, .fx-wave, .ink-logo, .sideways-title):not(.fx-live),
+html[data-fx-watch="on"] :is(.t-display, .t-section, .t-eyebrow, .fx-color, .fx-wave, .ink-logo, .sideways-title):not(.fx-live) *,
+html[data-fx-watch="on"] .t-eyebrow:not(.fx-live)::before {
+  animation-play-state: paused;
+}
+
+/* ---- 4. hover effects only where there is a hover -------------------------------- */
+@media (hover: none) {
+  html[data-theme] .card-lift::before,
+  html[data-theme] .card-lift::after { display: none; }
+  html[data-theme] .card-lift:hover { transform: none; }
+  html[data-theme] .card-lift:hover > img { transform: none; }
+}
+
+/* ---- 5. do not draw what is far below the screen ---------------------------------- */
+footer,
+.ink-newsletter {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px; /* "auto" remembers the real height once it has been drawn */
+}

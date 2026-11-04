@@ -1,13 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import { useCatalog } from '../../context/CatalogContext'
 import Home from '../../pages/Home/Home'
-import AccountPage from '../../pages/Account/AccountPage'
 import AudiencePage from '../../pages/Shelf/AudiencePage'
-import MotionLab from '../../pages/MotionLab/MotionLab'
-import ResearchPage from '../../pages/Research/ResearchPage'
-import CheckoutPage from '../../pages/Checkout/CheckoutPage'
 import { scrollToContactIfAsked } from '../../lib/contactLink'
 import ErrorBoundary from '../../shared/ErrorBoundary'
+
+// Pages nobody sees on first load are fetched when they are opened (Stripe, the research reader and the motion lab are big),
+// so the first screen downloads and parses much less JavaScript. Home and the shelves stay in the main bundle.
+const AccountPage = lazy(() => import('../../pages/Account/AccountPage'))
+const MotionLab = lazy(() => import('../../pages/MotionLab/MotionLab'))
+const ResearchPage = lazy(() => import('../../pages/Research/ResearchPage'))
+const CheckoutPage = lazy(() => import('../../pages/Checkout/CheckoutPage'))
 
 // The router outlet: shows the home page, or the page for whichever group is in the address.
 // Checkout is one screen of step boxes: #/checkout (cart), #/checkout?book=ID (Buy now), #/checkout/12 (back from Stripe).
@@ -51,6 +54,7 @@ export default function Main({ route }) {
     <main id="main">
       {/* key makes React start a fresh page (and a fresh filter) when you switch groups; the boundary keeps one broken page from taking the header down with it */}
       <ErrorBoundary key={route}>
+        <Suspense fallback={<div role="status" aria-label="Loading" className="min-h-[60vh]" />}>
         {isLab ? (
           <MotionLab />
         ) : isResearch ? (
@@ -64,6 +68,7 @@ export default function Main({ route }) {
         ) : (
           <Home />
         )}
+        </Suspense>
       </ErrorBoundary>
     </main>
   )

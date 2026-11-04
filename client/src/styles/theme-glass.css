@@ -21,6 +21,12 @@
      blur, gradients, reflections. Everything is scoped to html[data-theme="light"], so Night is untouched.
      Not inside a cascade layer on purpose, so it beats Tailwind utilities and @layer components rules.
 
+   PERFORMANCE
+     Live blur (backdrop-filter) is expensive because the aurora moves behind every pane and the GPU would redo the
+     blur each frame. The aurora is made of smooth shapes, so blurring it changes almost nothing visible. Therefore only
+     the header (always on screen) and the dialogs (one open at a time) really blur. Cards, chips, bands and the footer get
+     their glass look from the translucent gradient fill, the bright edge and the reflections, which cost no blur.
+
    CLASS INDEX
      1   variables          brand tokens, skin tokens, account palette, glass recipe (--gl-*)
      2   background         body fallback, aurora, sheen, spotlight, vignette, side rail
@@ -140,13 +146,7 @@ html[data-theme="light"] body {
 
 html[data-theme="light"] ::selection { background: var(--gl-violet); color: #ffffff; }
 
-/* the aurora: same four blobs, daylight colours, normal blending (screen would vanish on a light page) */
-html[data-theme="light"] .ink-aurora { opacity: 1; }
-html[data-theme="light"] .ink-aurora span { mix-blend-mode: normal; }
-html[data-theme="light"] .ink-a1 { background: radial-gradient(circle at 40% 40%, rgba(255,184,110,.78), transparent 70%); }
-html[data-theme="light"] .ink-a2 { background: radial-gradient(circle at 50% 50%, rgba(160,130,250,.68), transparent 70%); }
-html[data-theme="light"] .ink-a3 { background: radial-gradient(circle at 50% 50%, rgba(100,225,205,.58), transparent 70%); }
-html[data-theme="light"] .ink-a4 { background: radial-gradient(circle at 50% 50%, rgba(250,135,175,.56), transparent 70%); }
+/* the aurora itself (one layer, four gradients) is in styles/perf.css: here only its daylight colours and blending are set */
 
 /* a white lens that follows the pointer (in Night this is an amber glow) */
 html[data-theme="light"] .ink-spotlight {
@@ -163,7 +163,7 @@ html[data-theme="light"] .ink-grain { opacity: 0.03; }
    One element, transform only, so it costs nothing to animate. Hidden in Night. */
 .ink-sheen { display: none; }
 html[data-theme="light"] .ink-sheen {
-  display: block; inset: -15% -22%; z-index: -1; will-change: transform;
+  display: block; inset: -3% -9%; z-index: -1; will-change: transform;
   background:
     linear-gradient(112deg, transparent 17%, rgba(255,255,255,0) 22%, rgba(255,255,255,.55) 30%, rgba(255,255,255,0) 38%, transparent 44%),
     linear-gradient(112deg, transparent 52%, rgba(255,255,255,.38) 58%, rgba(255,255,255,0) 63%, transparent 70%);
@@ -193,15 +193,15 @@ html[data-theme="light"] .side-rail__fill {
 
 html[data-theme="light"] .site-header {
   background: linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.46));
-  -webkit-backdrop-filter: blur(20px) saturate(1.7);
-  backdrop-filter: blur(20px) saturate(1.7);
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  backdrop-filter: blur(12px) saturate(1.5);
   border-bottom: 1px solid var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff, 0 1px 0 rgba(106,77,224,.10), 0 14px 30px -20px rgba(52,36,120,.40);
 }
 /* the phone menu sits on a pane of glass of its own */
 html[data-theme="light"] .site-header nav {
-  -webkit-backdrop-filter: blur(22px) saturate(1.6);
-  backdrop-filter: blur(22px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  backdrop-filter: blur(14px) saturate(1.5);
 }
 
 html[data-theme="light"] .ink-logo {
@@ -280,8 +280,6 @@ html[data-theme="light"] .skin-btn-soft {
   background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.42));
   border: 1px solid var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff, 0 0 0 1px rgba(106,77,224,.16), 0 8px 20px -12px rgba(52,36,120,.40);
-  -webkit-backdrop-filter: blur(10px) saturate(1.5);
-  backdrop-filter: blur(10px) saturate(1.5);
   transition: transform 0.3s var(--ink-ease), box-shadow 0.35s var(--ink-ease), background 0.35s var(--ink-ease);
 }
 html[data-theme="light"] .skin-btn-soft:hover:not(:disabled) {
@@ -295,8 +293,6 @@ html[data-theme="light"] .chip {
   background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.40));
   border: 1px solid rgba(106, 77, 224, 0.24);
   box-shadow: inset 0 1px 0 #ffffff, 0 6px 16px -10px rgba(52,36,120,.35);
-  -webkit-backdrop-filter: blur(10px) saturate(1.5);
-  backdrop-filter: blur(10px) saturate(1.5);
   transition: transform 0.3s var(--ink-ease), border-color 0.35s var(--ink-ease), background 0.35s var(--ink-ease), box-shadow 0.35s var(--ink-ease);
 }
 html[data-theme="light"] .chip:hover {
@@ -361,8 +357,6 @@ html[data-theme="light"] .t-eyebrow {
   background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.42));
   border: 1px solid var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff, 0 6px 16px -10px rgba(52,36,120,.40);
-  -webkit-backdrop-filter: blur(10px) saturate(1.5);
-  backdrop-filter: blur(10px) saturate(1.5);
   font-size: 0.72rem; font-weight: 600; letter-spacing: 0.26em; text-transform: uppercase; color: var(--skin-muted);
 }
 html[data-theme="light"] .t-eyebrow::before {
@@ -399,8 +393,6 @@ html[data-theme="light"] .skin-card {
   background: var(--gl-fill);
   border: 1px solid var(--gl-edge);
   box-shadow: var(--gl-shadow);
-  -webkit-backdrop-filter: var(--gl-blur);
-  backdrop-filter: var(--gl-blur);
 }
 
 /* cards that lift (book cards, shelf tiles): they tilt towards the pointer (lib/inkwellFx.js sets --rx --ry --mx --my)
@@ -449,8 +441,6 @@ html[data-theme="light"] .rail-btn {
   background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.42));
   border-color: var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff, 0 8px 18px -10px rgba(52,36,120,.4);
-  -webkit-backdrop-filter: blur(10px) saturate(1.5);
-  backdrop-filter: blur(10px) saturate(1.5);
 }
 html[data-theme="light"] .rail-btn:hover:not(:disabled) { border-color: rgba(106,77,224,.6); background: rgba(255,255,255,.95); }
 html[data-theme="light"] .sideways-title em {
@@ -476,8 +466,6 @@ html[data-theme="light"] .ink-marquee {
   background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.28));
   border-block: 1px solid var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff;
-  -webkit-backdrop-filter: blur(14px) saturate(1.5);
-  backdrop-filter: blur(14px) saturate(1.5);
 }
 html[data-theme="light"] .contact-timeline { border-top: 1px solid var(--gl-edge); }
 
@@ -488,22 +476,16 @@ html[data-theme="light"] [class*="bg-[#ffd9d5]"] {
   background: linear-gradient(145deg, rgba(255,205,215,.62), rgba(255,255,255,.34));
   border: 1px solid var(--gl-edge);
   box-shadow: var(--gl-shadow);
-  -webkit-backdrop-filter: var(--gl-blur);
-  backdrop-filter: var(--gl-blur);
 }
 html[data-theme="light"] [class*="bg-[#bfe0fb]"] {
   background: linear-gradient(145deg, rgba(180,210,255,.60), rgba(255,255,255,.34));
   border: 1px solid var(--gl-edge);
   box-shadow: var(--gl-shadow);
-  -webkit-backdrop-filter: var(--gl-blur);
-  backdrop-filter: var(--gl-blur);
 }
 html[data-theme="light"] [class*="bg-[#d6f5ea]"] {
   background: linear-gradient(145deg, rgba(160,235,215,.60), rgba(255,255,255,.34));
   border: 1px solid var(--gl-edge);
   box-shadow: var(--gl-shadow);
-  -webkit-backdrop-filter: var(--gl-blur);
-  backdrop-filter: var(--gl-blur);
 }
 
 
@@ -515,8 +497,6 @@ html[data-theme="light"] footer {
   background: linear-gradient(180deg, rgba(255,255,255,.50), rgba(255,255,255,.30));
   border-top: 1px solid var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff;
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
-  backdrop-filter: blur(18px) saturate(1.5);
 }
 html[data-theme="light"] .footer-stripe {
   background: linear-gradient(90deg, #e8962e, var(--gl-rose) 50%, var(--gl-violet));
@@ -532,8 +512,8 @@ html[data-theme="light"] [role="dialog"] {
   background: linear-gradient(160deg, rgba(255,255,255,.84), rgba(255,255,255,.60));
   border: 1px solid var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff, 0 30px 80px -24px rgba(40, 24, 110, 0.50);
-  -webkit-backdrop-filter: blur(28px) saturate(1.6);
-  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.5);
 }
 html[data-theme="light"] dialog.drawer { border-width: 0 0 0 1px; box-shadow: inset 1px 0 0 #ffffff, -24px 0 60px -24px rgba(40, 24, 110, 0.45); }
 html[data-theme="light"] dialog[open]::backdrop {
@@ -551,8 +531,6 @@ html[data-theme="light"] .skin-input {
   background: linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.50));
   border-color: var(--skin-input-border);
   box-shadow: inset 0 1px 2px rgba(52,36,120,.08), inset 0 1px 0 #ffffff;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
 }
 html[data-theme="light"] .skin-input:focus,
 html[data-theme="light"] .skin-input:focus-within {
@@ -570,8 +548,6 @@ html[data-theme="light"] .rs-tab {
   background: var(--gl-fill);
   border: 1px solid var(--gl-edge);
   box-shadow: var(--gl-shadow);
-  -webkit-backdrop-filter: var(--gl-blur);
-  backdrop-filter: var(--gl-blur);
 }
 html[data-theme="light"] .rs-tab:hover { border-color: rgba(106, 77, 224, 0.55); }
 html[data-theme="light"] .rs-tab[aria-current="page"] {
@@ -588,8 +564,6 @@ html[data-theme="light"] .rs-tab__icon { background: rgba(255,255,255,.6); box-s
 html[data-theme="light"] .skin-glass-stage {
   border: 1px solid var(--gl-edge);
   box-shadow: inset 0 1px 0 #ffffff, 0 30px 70px -30px rgba(52, 36, 120, 0.40);
-  -webkit-backdrop-filter: blur(10px) saturate(1.4);
-  backdrop-filter: blur(10px) saturate(1.4);
   background:
     radial-gradient(ellipse 65% 60% at 15% 10%, rgba(255,196,128,.55) 0%, transparent 55%),
     radial-gradient(ellipse 60% 55% at 88% 88%, rgba(110,231,210,.45) 0%, transparent 55%),
@@ -600,8 +574,6 @@ html[data-theme="light"] .skin-glass-card {
   background: var(--gl-fill);
   border: 1px solid var(--gl-edge);
   box-shadow: var(--gl-shadow);
-  -webkit-backdrop-filter: var(--gl-blur);
-  backdrop-filter: var(--gl-blur);
 }
 html[data-theme="light"] .skin-glass-card .skin-input { background: rgba(255, 255, 255, 0.72); }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -677,7 +649,6 @@ html[data-theme="light"] .skin-reduce-fx :is(.skin-card, .skin-glass-card) { bac
   }
   html[data-theme="light"] :is(.skin-card, .skin-glass-card, .rs-tab:not([aria-current="page"]), dialog.popup, dialog.drawer, [role="dialog"], .site-header, .site-header nav) {
     background: #ffffff;
-    -webkit-backdrop-filter: none; backdrop-filter: none;
   }
   html[data-theme="light"] .skin-btn:not(.skin-btn-soft):not(.skin-btn-pop):not(:disabled),
   html[data-theme="light"] .chip[aria-pressed="true"] { background: #3b24a8; }

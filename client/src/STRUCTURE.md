@@ -12,6 +12,7 @@ src/
 │   ├── tokens.css        colours, fonts, easing, skin variables (the base values; both themes override them)
 │   ├── theme-night.css   the Night theme = the INKWELL palette (ink-black, cream, amber / rose / violet), under html[data-theme="dark"]. The DEFAULT theme.
 │   ├── inkwell.css      the INKWELL look: aurora layers, glass cards, gradient buttons, shimmer headings, reveal. Dark theme only (fonts, .rise, .fx-* text effects apply to both)
+│   ├── perf.css         PERFORMANCE (both themes): the one-layer aurora, the quality levels (data-fx), loop text effects only while visible, hover only where hover exists
 │   ├── theme-glass.css  the LIGHT GLASS theme under html[data-theme="light"]: pearl page, pastel aurora, frosted panels, reflections, glossy headings
 │   ├── animations.css    @keyframes
 │   ├── base.css          html/body defaults, focus ring, gutters
@@ -42,7 +43,7 @@ src/
 │   ├── AdvancedToggle.jsx  the "Advanced search" button that opens/closes a filter panel
 │   └── Button, Container, Stepper, BackgroundVideo, ErrorBoundary, CountUp (number that counts up on screen)
 │
-└── context/  data/  lib/   State, static data, helpers. New in lib/: inkwellFx.js (reveal on scroll, card tilt, magnetic buttons, started in main.jsx), useDragRail.js (the sideways shelf engine)
+└── context/  data/  lib/   State, static data, helpers. New in lib/: quality.js (the quality governor: full / lite / min, steps down when frames get slow), inkwellFx.js (reveal on scroll, card tilt, magnetic buttons, started in main.jsx), useDragRail.js (the sideways shelf engine)
 ```
 
 ## Adding or changing styles
@@ -59,4 +60,5 @@ src/
 * **Effects** are in `styles/inkwell.css`. It is deliberately NOT in a cascade layer, so it beats Tailwind utilities without `!important`.
 * **No JSX knows about the tilt / glow / magnetic effect.** `lib/inkwellFx.js` listens on the whole page: give an element `.card-lift`, `.skin-btn`, `.ink-hero` or `.reveal` / `.ink-reveal` and it just works.
 * **The light glass theme** (`styles/theme-glass.css`) is the daytime twin of Night. Glass recipe = the `--gl-*` variables at the top of that file (fill, blur, edge, shadow): change them once and every pane follows. Reflections: `.ink-sheen` (page-wide band of light), `.card-lift::after` (corner glare + hover sweep), `.card-lift::before` (light under the pointer), `.t-display` / `.t-section` (the glossy band that slides through heading letters, `gl-gloss`), `.t-card-title` (flashes the band on hover). Pointer tilt and magnetic buttons (`lib/inkwellFx.js`) run in both themes.
+* **Performance (read before adding effects):** `lib/quality.js` watches real frame time and sets `<html data-fx="full|lite|min">` (weak devices start at lite; it only steps down, never up; force a level with `window.__setFx('lite')` in the console). `styles/perf.css` reads it. Rules: animate only `transform` / `opacity`; only the header and open dialogs may use `backdrop-filter`; new looping animations should be listed in the `.fx-live` selector in `perf.css` so they pause off-screen; the particle canvas stamps pre-drawn sprites (`InkwellBackground.jsx`), never `fillText` per frame. Heavy pages (Account, Research, Checkout, Motion lab) are lazy-loaded in `layout/Main/Main.jsx`.
 * **Turning the heavy parts off:** `prefers-reduced-motion`, `prefers-reduced-transparency`, or `document.body.classList.add('skin-reduce-fx')`.
